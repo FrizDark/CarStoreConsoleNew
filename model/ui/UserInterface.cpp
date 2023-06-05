@@ -121,7 +121,7 @@ void UserInterface::printMenu(
 }
 
 template <typename T>
-void UserInterface::printTable(const vector<T *> &values, const vector<std::string> &ignoreFields) {
+void UserInterface::printTable(const list<T *> &values, const vector<std::string> &ignoreFields) {
     auto fields = values.front()->fields();
     auto format = [](std::string value, size_t width) {
         if (width > value.size()) value.append(width - value.size(), ' ');
@@ -465,7 +465,7 @@ TableType *UserInterface::addEngine(const vector<std::string> &ignoreFields) {
 
 template<typename Table, typename TableType>
 TableType *UserInterface::searchEngine(const vector<std::string> &ignoreFields) {
-    auto filter = [](vector<Object*>& elements, const std::function<bool(const Object*)>& f) {
+    auto filter = [](list<Object*>& elements, const std::function<bool(const Object*)>& f) {
         for (auto i = elements.begin(); i != elements.end(); i++) {
             if (!f(*i)) elements.erase(i--);
         }
@@ -475,8 +475,7 @@ TableType *UserInterface::searchEngine(const vector<std::string> &ignoreFields) 
     auto elements = Table::instance().elements();
     string s;
     ElementValue find;
-    vector<Object*> result;
-    result.reserve(elements.size());
+    list<Object*> result;
 
     for (const auto& i: elements) {
         result.emplace_back(i);

@@ -92,16 +92,16 @@ public:
     inline void add(T* m) { BasicSerializable::add(m); }
     inline void remove(T* m) { BasicSerializable::remove(m); }
 
-    vector<const T*> filter(std::function<bool(const T*)> f) const {
-        vector<const T*> out;
+    list<const T*> filter(std::function<bool(const T*)> f) const {
+        list<const T*> out;
         for (auto i: m_elements) {
             if (f(static_cast<T*>(i))) out.emplace_back(static_cast<T*>(i));
         }
         return out;
     }
 
-    vector<T*> filter(std::function<bool(const T*)> f) {
-        vector<T*> out;
+    list<T*> filter(std::function<bool(const T*)> f) {
+        list<T*> out;
         for (auto i: m_elements) {
             if (f(static_cast<T*>(i))) out.emplace_back(static_cast<T*>(i));
         }

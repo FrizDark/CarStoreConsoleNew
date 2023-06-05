@@ -37,7 +37,8 @@ void createModels() {
 void createCars() {
     CarModel& modelsInstance = CarModel::instance();
     Car& carsInstance = Car::instance();
-    vector<CarModelClass*> models = modelsInstance.filter([](const CarModelClass*){ return true; });
+    auto modelsList = modelsInstance.filter([](const CarModelClass*){ return true; });
+    vector<const CarModelClass*> models(modelsList.cbegin(), modelsList.cend());
     auto ids = generateIds(3);
     string colors[] = {"Blue", "Red", "Green"};
     double prices[] = {999, 9129, 1234};
@@ -77,8 +78,10 @@ void createManagers() {
 }
 
 void createCarManagers() {
-    auto cars = Car::instance().filter([](const CarClass*){ return true; });
-    auto managers = Manager::instance().filter([](const ManagerClass*){ return true; });
+    auto carsList = Car::instance().filter([](const CarClass*){ return true; });
+    auto managersList = Manager::instance().filter([](const ManagerClass*){ return true; });
+    vector<const CarClass*> cars(carsList.cbegin(), carsList.cend());
+    vector<const ManagerClass*> managers(managersList.cbegin(), managersList.cend());
     std::pair<int, int> pairs[] = {make_pair(0, 0), make_pair(1, 1), make_pair(2, 1)};
     vector<CarManagerClass> v(3);
     CarManager::instance().clear();

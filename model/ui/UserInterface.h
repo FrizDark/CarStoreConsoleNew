@@ -27,7 +27,7 @@ private:
             const vector<pair<string, std::function<void()>>>& actions,
             const string& exitName);
     template <typename T>
-    static void printTable(const vector<T*>& values, const vector<string>& ignore);
+    static void printTable(const list<T*>& values, const vector<string>& ignore);
     static void printTable(const BasicSerializable* table, const vector<string>& ignore);
 
     static void carModelMenu();
