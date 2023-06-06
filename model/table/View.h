@@ -3,18 +3,30 @@
 
 #include "Serializable.h"
 
-struct JoinField {
-    const BasicSerializable* child;
-    std::string parentField;
-    std::string childField;
-};
-
 class View {
+
+public:
+
+    struct JoinField {
+
+        const BasicSerializable* parent;
+        string idField;
+        list<pair<string, JoinField>> children;
+
+        JoinField() = default;
+        JoinField(const BasicSerializable* parent, const string& idField, list<pair<string, JoinField>> children = {});
+
+        JoinField(const JoinField& obj);
+        JoinField& operator=(const JoinField& obj);
+
+    };
 
 private:
 
-    const BasicSerializable* _parent;
-    vector<JoinField> _children;
+    JoinField _join;
+
+    void createJoins(const JoinField& join, bool noId = false);
+    Object createObjects(const View::JoinField& join, const std::function<bool(const Object*)>& pred) const;
 
 protected:
 
@@ -22,7 +34,7 @@ protected:
 
 public:
 
-    View(const BasicSerializable& parent, vector<JoinField> children);
+    View(const JoinField& join);
 
     inline map<std::string, TypeName> fields() const { return m_fields; }
     list<Object> elements() const;
@@ -39,7 +51,7 @@ protected:
 
 public:
 
-    ViewPrintable(const BasicSerializable& parent, vector<JoinField> children): View(parent, children) {};
+    ViewPrintable(const JoinField& joins): View(joins) {};
 
     virtual void print() const;
 
@@ -47,9 +59,11 @@ public:
 
 class CarModelView: public ViewPrintable {
 public:
-    CarModelView(): ViewPrintable(Car::instance(), {
-        {&CarModel::instance(), "model_id", "id"}
-    }) {
+    CarModelView(): ViewPrintable(
+            JoinField {
+                &Car::instance(), "id",
+                list { make_pair<string, JoinField>("model_id", { &CarModel::instance(), "id" }) }
+            }) {
         m_printFields.emplace_back(Car::instance().name() + ".color");
         m_printFields.emplace_back(Car::instance().name() + ".price");
 
@@ -61,12 +75,21 @@ public:
 
 class CarManagerView: public ViewPrintable {
 public:
-    CarManagerView(): ViewPrintable(CarManager::instance(), {
-        {&Car::instance(), "car_id", "id"},
-        {&Manager::instance(), "manager_id", "id"}
-    }) {
-        m_printFields.emplace_back(Car::instance().name() + ".mark");
-        m_printFields.emplace_back(Car::instance().name() + ".model");
+    CarManagerView(): ViewPrintable(
+            JoinField {
+                &CarManager::instance(), "id",
+                list {
+                    make_pair<string, JoinField>("car_id", {
+                        &Car::instance(), "id",
+                        list { make_pair<string, JoinField>("model_id", { &CarModel::instance(), "id" }) }
+                    }),
+                    make_pair<string, JoinField>("manager_id", { &Manager::instance(), "id" })
+                }
+            }) {
+        m_printFields.emplace_back(CarModel::instance().name() + ".mark");
+        m_printFields.emplace_back(CarModel::instance().name() + ".model");
+        m_printFields.emplace_back(CarModel::instance().name() + ".type");
+
         m_printFields.emplace_back(Car::instance().name() + ".color");
         m_printFields.emplace_back(Car::instance().name() + ".price");
 

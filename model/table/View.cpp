@@ -10,45 +10,82 @@ pair<std::string, std::string> getToken(std::string key) {
     return make_pair("", "");
 }
 
-View::View(const BasicSerializable& parent, vector<JoinField> children) {
-    _parent = &parent;
-    _children = vector(children);
-    for (const auto& element: _parent->elements()) {
+View::JoinField::JoinField(
+        const BasicSerializable *parent,
+        const std::string &idField,
+        list<pair<std::string, View::JoinField>> children) {
+    this->parent = parent;
+    this->idField = idField;
+    this->children = list(children);
+}
+
+View::JoinField::JoinField(const View::JoinField &obj) {
+    this->parent = obj.parent;
+    this->idField = obj.idField;
+    this->children = list(obj.children);
+}
+
+View::JoinField &View::JoinField::operator=(const View::JoinField &obj) {
+    this->parent = obj.parent;
+    this->idField = obj.idField;
+    this->children = list(obj.children);
+    return *this;
+}
+
+void View::createJoins(const View::JoinField &join, bool noId) {
+    for (const auto& element: join.parent->elements()) {
         for (const auto& field: element->fields()) {
-            m_fields.emplace(_parent->name() + "." + field.first, field.second);
+            if (noId && field.first == join.idField) continue;
+            m_fields.emplace(join.parent->name() + "." + field.first, field.second);
         }
     }
-    for (const auto& i: _children) {
-        for (const auto& element: i.child->elements()) {
-            for (const auto& field: element->fields()) {
-                if (field.first == i.childField) continue;
-                m_fields.emplace(i.child->name() + "." + field.first, field.second);
-            }
+    for (const auto& child: join.children) {
+        createJoins(child.second, true);
+    }
+}
+
+View::View(const JoinField& join) {
+    _join = join;
+    createJoins(join);
+}
+
+Object View::createObjects(const View::JoinField &join, const std::function<bool(const Object*)>& pred) const {
+    auto element = join.parent->filter(pred);
+    if (element.empty()) return {};
+    Object obj;
+    for (const auto& value: element.front()->values()) {
+        if (value.first == join.idField) continue;
+        obj[join.parent->name() + "." + value.first] = value.second;
+    }
+    for (const auto& child: join.children) {
+        if ((*element.front())[child.first].type == et_empty) break;
+        auto childObj = createObjects(child.second, [=](const Object* i) {
+            return (*i)[child.second.idField] == (*element.front())[child.first];
+        });
+        for (const auto& value: childObj.values()) {
+            obj[value.first] = value.second;
         }
     }
+    return obj;
 }
 
 list<Object> View::elements() const {
     list<Object> elements;
-
-    for (const auto& li: _parent->elements()) {
-        Object element;
-        for (const auto& i: li->values()) {
-            element[_parent->name() + "." + i.first] = i.second;
+    for (const auto& element: _join.parent->elements()) {
+        Object obj;
+        for (const auto& value: element->values()) {
+            obj[_join.parent->name() + "." + value.first] = value.second;
         }
-        for (const auto& item: _children) {
-            if ((*li)[item.parentField].type == et_empty) continue;
-            auto pred = [=, this](const Object* i) {
-                return (*i)[item.childField].toString() == (*li)[item.parentField].toString();
-            };
-            auto child = item.child->filter(pred);
-            if (child.empty()) continue;
-            for (const auto& i: child.front()->values()) {
-                if (i.first == item.childField) continue;
-                element[item.child->name() + "." + i.first] = i.second;
+        for (const auto& child: _join.children) {
+            if ((*element)[child.first].type == et_empty) break;
+            auto childObj = createObjects(child.second, [=](const Object* i) {
+                return (*i)[child.second.idField] == (*element)[child.first];
+            });
+            for (const auto& value: childObj.values()) {
+                obj[value.first] = value.second;
             }
         }
-        elements.emplace_back(element);
+        elements.emplace_back(obj);
     }
     return elements;
 }

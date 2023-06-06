@@ -4,7 +4,7 @@
 
 class TestModel1: public Object {
 public:
-    TestModel1() {}
+    TestModel1() = default;
     TestModel1(const TestModel1& obj): Object(obj) {}
     const map<std::string, TypeName> fields() const override {
         map<std::string, TypeName> f;
@@ -17,7 +17,7 @@ public:
 };
 class TestModel2: public Object {
 public:
-    TestModel2() {}
+    TestModel2() = default;
     TestModel2(const TestModel2& obj): Object(obj) {}
     const map<std::string, TypeName> fields() const override {
         map<std::string, TypeName> f;
@@ -47,7 +47,11 @@ public:
 
 class TestView: public View {
 public:
-    TestView(): View(TestTable1::instance(), {{&TestTable2::instance(), "itemId", "id"}}) {}
+    TestView(): View(
+            JoinField {
+                &TestTable1::instance(), "id",
+                list { make_pair<string, JoinField>("itemId", { &TestTable2::instance(), "id" }) }
+            }) {}
 };
 
 BOOST_AUTO_TEST_SUITE(ViewTestSuite)
