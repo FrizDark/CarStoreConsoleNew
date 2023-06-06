@@ -236,10 +236,11 @@ void UserInterface::carMenu() {
     actions.emplace_back("Add", [](){
         auto model = searchEngine<CarModel, CarModelClass>({"id"});
         if (model == nullptr) return;
-        auto car = addEngine<CarClass>({"id", "model_id", "mark"});
+        auto car = addEngine<CarClass>({"id", "model_id", "mark", "model"});
         if (car == nullptr) return;
         (*car)["model_id"] = (*model)["id"];
         (*car)["mark"] = (*model)["mark"];
+        (*car)["model"] = (*model)["model"];
         if (!findElement(Car::instance().elements(), car)) {
             (*car)["id"] = generateId();
             Car::instance().add(car);
@@ -269,10 +270,11 @@ void UserInterface::carMenu() {
         string id = (*item)["id"].toString();
         auto model = searchEngine<CarModel, CarModelClass>({"id"});
         if (model == nullptr) return;
-        auto newItem = addEngine<CarClass>({"id", "model_id", "mark"});
+        auto newItem = addEngine<CarClass>({"id", "model_id", "mark", "model"});
         if (newItem == nullptr) return;
         (*newItem)["model_id"] = (*model)["id"];
         (*newItem)["mark"] = (*model)["mark"];
+        (*newItem)["model"] = (*model)["model"];
         if (findElement(Car::instance().elements(), newItem)) {
             delete newItem;
             showBanner(B_ALREADY_EXISTS);
@@ -284,6 +286,7 @@ void UserInterface::carMenu() {
         for (const auto& carManager: CarManager::instance().elements()) {
             if ((*carManager)["car_id"] != id) continue;
             (*carManager)["mark"] = (*item)["mark"];
+            (*carManager)["model"] = (*item)["model"];
         }
         showBanner(B_SUCCESS);
     });
@@ -371,6 +374,7 @@ void UserInterface::carManagerMenu() {
         CarManagerClass carManager;
         carManager["car_id"] = (*car)["id"];
         carManager["mark"] = (*car)["mark"];
+        carManager["model"] = (*car)["model"];
         carManager["manager_id"] = (*manager)["id"];
         carManager["lastname"] = (*manager)["lastname"];
         carManager["city"] = (*manager)["city"];
@@ -399,6 +403,7 @@ void UserInterface::carManagerMenu() {
         CarManagerClass newItem;
         newItem["car_id"] = (*car)["id"];
         newItem["mark"] = (*car)["mark"];
+        newItem["model"] = (*car)["model"];
         newItem["manager_id"] = (*manager)["id"];
         newItem["lastname"] = (*manager)["lastname"];
         newItem["city"] = (*manager)["city"];

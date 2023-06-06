@@ -66,6 +66,7 @@ public:
         {&Manager::instance(), "manager_id", "id"}
     }) {
         m_printFields.emplace_back(Car::instance().name() + ".mark");
+        m_printFields.emplace_back(Car::instance().name() + ".model");
         m_printFields.emplace_back(Car::instance().name() + ".color");
         m_printFields.emplace_back(Car::instance().name() + ".price");
 

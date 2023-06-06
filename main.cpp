@@ -50,6 +50,7 @@ void createCars() {
         v[i]["price"] = prices[i];
         v[i]["model_id"] = (*models[i + 1])["id"];
         v[i]["mark"] = (*models[i + 1])["mark"];
+        v[i]["model"] = (*models[i + 1])["model"];
         carsInstance.add(v[i].clone());
     }
     carsInstance.save();
@@ -90,6 +91,7 @@ void createCarManagers() {
         auto& manager = *managers[pairs[i].second];
         v[i]["car_id"] = car["id"];
         v[i]["mark"] = car["mark"];
+        v[i]["model"] = car["model"];
         v[i]["manager_id"] = manager["id"];
         v[i]["lastname"] = manager["lastname"];
         v[i]["city"] = manager["city"];

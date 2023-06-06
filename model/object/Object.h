@@ -69,6 +69,7 @@ public:
     inline virtual const map<std::string, TypeName> fields() const { return {}; };
     inline const map<std::string, ElementValue> values() const { return _values; }
     inline void insert(pair<std::string, ElementValue> item) { _values.insert(item); }
+    inline void erase(std::string key) { _values.erase(key); }
     inline void clear() { _values.clear(); }
 
     ElementValue& operator[](std::string const &);

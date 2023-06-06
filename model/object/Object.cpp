@@ -204,6 +204,7 @@ const map<std::string, TypeName> CarClass::fields() const {
     f.insert(std::make_pair("id", TypeName {et_string, "ID"}));
     f.insert(std::make_pair("model_id", TypeName {et_string, "Model ID"}));
     f.insert(std::make_pair("mark", TypeName {et_string, "Mark"}));
+    f.insert(std::make_pair("model", TypeName {et_string, "Model"}));
     f.insert(std::make_pair("color", TypeName {et_string, "Color"}));
     f.insert(std::make_pair("price", TypeName {et_number, "Price"}));
     return f;
@@ -228,5 +229,6 @@ const map<std::string, TypeName> CarManagerClass::fields() const {
     f.insert(std::make_pair("city", TypeName {et_string, "City"}));
     f.insert(std::make_pair("phone", TypeName {et_string, "Phone"}));
     f.insert(std::make_pair("mark", TypeName {et_string, "Mark"}));
+    f.insert(std::make_pair("model", TypeName {et_string, "Model"}));
     return f;
 }

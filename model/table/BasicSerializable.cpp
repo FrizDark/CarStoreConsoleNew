@@ -15,6 +15,7 @@ void BasicSerializable::save() const {
 pt::ptree BasicSerializable::saver(const Object &item) const {
     pt::ptree root, array, element;
     for (const auto& value: item.values()) {
+        if (!item.fields().empty() && !item.fields().contains(value.first)) continue;
         switch(value.second.type) {
             case et_empty:
                 root.put(value.first, nullptr);
