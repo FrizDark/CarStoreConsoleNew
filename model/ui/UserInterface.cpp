@@ -69,7 +69,9 @@ void UserInterface::showBanner(UserInterface::Banner type) {
 void UserInterface::printMenu(
         const std::string &title,
         const vector<pair<string, std::function<void()>>> &actions,
-        const string& exitName) {
+        const string& exitName,
+        const function<void()>& onAppear
+        ) {
     bool run = true;
     string input;
     size_t maxWidth = title.size();
@@ -88,6 +90,7 @@ void UserInterface::printMenu(
 
     while (run) {
         system("clear");
+        if (onAppear != NULL) onAppear();
         cout << line << endl;
         cout << "| " << format(title) << " |" << endl;
         cout << line << endl;
@@ -195,21 +198,23 @@ void UserInterface::carModelMenu() {
         CarModel::instance().remove(item);
         showBanner(B_SUCCESS);
     });
-    actions.emplace_back("Recreate", [ignoreFields](){
+    actions.emplace_back("Edit", [ignoreFields](){
         auto item = searchEngine<CarModel, CarModelClass>(ignoreFields);
         if (item == nullptr) return;
-        string id = (*item)["id"].toString();
-        auto newItem = addEngine<CarModelClass>(ignoreFields);
-        if (newItem == nullptr) return;
-        if (findElement(CarModel::instance().elements(), newItem)) {
-            delete newItem;
+        auto copy = item->clone();
+        string id = (*copy)["id"].toString();
+        copy->erase("id");
+        editEngine(copy, ignoreFields, [&](){
+            printTable<CarModelClass>({copy}, ignoreFields);
+        });
+        if (findElement(CarModel::instance().elements(), copy)) {
+            delete copy;
             showBanner(B_ALREADY_EXISTS);
             return;
         }
-        *item = *newItem;
-        delete newItem;
-        (*item)["id"] = id;
-        showBanner(B_SUCCESS);
+        (*copy)["id"] = id;
+        *item = *copy;
+        delete copy;
     });
     actions.emplace_back("Show", [ignoreFields](){
         printTable(&CarModel::instance(), ignoreFields);
@@ -259,24 +264,37 @@ void UserInterface::carMenu() {
         Car::instance().remove(item);
         showBanner(B_SUCCESS);
     });
-    actions.emplace_back("Recreate", [ignoreFields](){
-        auto item = searchEngine<Car, CarClass>(ignoreFields);
+    actions.emplace_back("Edit", [=](){
+        auto viewItem = searchEngine(carModelView);
+        if (viewItem == nullopt) return;
+        auto item = Car::instance().first([viewItem](const CarClass* item){
+            return (*item)["id"] == viewItem.value()[Car::instance().name() + ".id"];
+        });
         if (item == nullptr) return;
-        string id = (*item)["id"].toString();
-        auto model = searchEngine<CarModel, CarModelClass>({"id"});
-        if (model == nullptr) return;
-        auto newItem = addEngine<CarClass>({"id", "model_id", "mark", "model"});
-        if (newItem == nullptr) return;
-        (*newItem)["model_id"] = (*model)["id"];
-        if (findElement(Car::instance().elements(), newItem)) {
-            delete newItem;
+        auto copy = item->clone();
+        string id = (*copy)["id"].toString();
+        copy->erase("id");
+        map<string, function<void()>> specifics;
+        specifics["model_id"] = [=, &copy]() {
+            auto model = searchEngine<CarModel, CarModelClass>({"id"});
+            if (model == nullptr) return;
+            (*copy)["model_id"] = (*model)["id"];
+        };
+        editEngine(copy, ignoreFields, [&](){
+            auto model = CarModel::instance().first([copy](const CarModelClass* item) {
+                return (*item)["id"] == (*copy)["model_id"];
+            });
+            if (model != nullptr) printTable<CarModelClass>({model}, {"id"});
+            printTable<CarClass>({copy}, ignoreFields);
+        }, specifics);
+        if (findElement(Car::instance().elements(), copy)) {
+            delete copy;
             showBanner(B_ALREADY_EXISTS);
             return;
         }
-        *item = *newItem;
-        delete newItem;
-        (*item)["id"] = id;
-        showBanner(B_SUCCESS);
+        (*copy)["id"] = id;
+        *item = *copy;
+        delete copy;
     });
     actions.emplace_back("Show", [carModelView](){
         carModelView.print();
@@ -318,21 +336,23 @@ void UserInterface::managerMenu() {
         Manager::instance().remove(item);
         showBanner(B_SUCCESS);
     });
-    actions.emplace_back("Recreate", [ignoreFields](){
+    actions.emplace_back("Edit", [ignoreFields](){
         auto item = searchEngine<Manager, ManagerClass>(ignoreFields);
         if (item == nullptr) return;
-        string id = (*item)["id"].toString();
-        auto newItem = addEngine<ManagerClass>(ignoreFields);
-        if (newItem == nullptr) return;
-        if (findElement(Manager::instance().elements(), newItem)) {
-            delete newItem;
+        auto copy = item->clone();
+        string id = (*copy)["id"].toString();
+        copy->erase("id");
+        editEngine(copy, ignoreFields, [&](){
+            printTable<ManagerClass>({copy}, ignoreFields);
+        });
+        if (findElement(Manager::instance().elements(), copy)) {
+            delete copy;
             showBanner(B_ALREADY_EXISTS);
             return;
         }
-        *item = *newItem;
-        delete newItem;
-        (*item)["id"] = id;
-        showBanner(B_SUCCESS);
+        (*copy)["id"] = id;
+        *item = *copy;
+        delete copy;
     });
     actions.emplace_back("Show", [ignoreFields](){
         printTable(&Manager::instance(), ignoreFields);
@@ -375,18 +395,49 @@ void UserInterface::carManagerMenu() {
             showBanner(B_SUCCESS);
         }
     });
-    actions.emplace_back("Recreate", [ignoreFields](){
-        auto item = searchEngine<CarManager, CarManagerClass>(ignoreFields);
+    actions.emplace_back("Edit", [=](){
+        auto viewItem = searchEngine(carManagerView);
+        if (viewItem == nullopt) return;
+        auto item = CarManager::instance().first([viewItem](const CarManagerClass* item){
+            return (*item)["car_id"] == viewItem.value()[CarManager::instance().name() + ".car_id"] &&
+                (*item)["manager_id"] == viewItem.value()[CarManager::instance().name() + ".manager_id"];
+        });
         if (item == nullptr) return;
-        auto manager = searchEngine<Manager, ManagerClass>({"id"});
-        if (manager == nullptr) return;
-        auto car = searchEngine<Car, CarClass>({"id", "model_id"});
-        if (car == nullptr) return;
-        CarManagerClass newItem;
-        newItem["car_id"] = (*car)["id"];
-        newItem["manager_id"] = (*manager)["id"];
-        *item = newItem;
-        showBanner(B_SUCCESS);
+        auto copy = item->clone();
+        map<string, function<void()>> specifics;
+        specifics["car_id"] = [=, &copy]() {
+            auto viewCar = searchEngine(CarModelView());
+            if (viewCar == nullopt) return;
+            auto car = Car::instance().first([viewCar](const CarClass* item) {
+                return (*item)["id"] == viewCar.value()[Car::instance().name() + ".id"];
+            });
+            if (car == nullptr) return;
+            (*copy)["car_id"] = (*car)["id"];
+        };
+        specifics["manager_id"] = [=, &copy]() {
+            auto manager = searchEngine<Manager, ManagerClass>({"id"});
+            if (manager == nullptr) return;
+            (*copy)["manager_id"] = (*manager)["id"];
+        };
+        editEngine(copy, ignoreFields, [&](){
+            auto car = Car::instance().first([copy](const CarClass* item) {
+                return (*item)["id"] == (*copy)["car_id"];
+            });
+            if (car != nullptr) CarModelView().print([car](const Object item){
+                return item[Car::instance().name() + ".id"] == (*car)["id"];
+            });
+            auto manager = Manager::instance().first([copy](const ManagerClass* item) {
+                return (*item)["id"] == (*copy)["manager_id"];
+            });
+            if (manager != nullptr) printTable<ManagerClass>({manager}, {"id"});
+        }, specifics);
+        if (findElement(CarManager::instance().elements(), copy)) {
+            delete copy;
+            showBanner(B_ALREADY_EXISTS);
+            return;
+        }
+        *item = *copy;
+        delete copy;
     });
     actions.emplace_back("Show", [carManagerView](){
         carManagerView.print();
@@ -523,4 +574,28 @@ optional<Object> UserInterface::searchEngine(View view) {
         return nullopt;
     }
     return result.front();
+}
+
+template<typename TableType>
+void UserInterface::editEngine(
+        TableType *item,
+        const vector<std::string> &ignoreFields,
+        const function<void()> showItem,
+        const map<std::string, function<void()>> &specifics
+        ) {
+    vector<pair<string, function<void()>>> actions;
+    for (const auto& field: item->fields()) {
+        if (specifics.contains(field.first)) {
+            actions.emplace_back(field.second.name, specifics.at(field.first));
+        } else {
+            if (contains(ignoreFields, field.first) ||
+                field.second.type == et_empty ||
+                field.second.type == et_array ||
+                field.second.type == et_object) continue;
+            actions.emplace_back(field.second.name, [=, &item](){
+                (*item)[field.first] = askForValue(field.second.name, field.second.type);
+            });
+        }
+    }
+    printMenu("Edit", actions, "Done", showItem);
 }

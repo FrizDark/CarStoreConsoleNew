@@ -25,7 +25,8 @@ private:
     static void printMenu(
             const string& title,
             const vector<pair<string, function<void()>>>& actions,
-            const string& exitName
+            const string& exitName,
+            const function<void()>& onAppear = NULL
     );
     template <typename T>
     static void printTable(const list<T*>& values, const vector<string>& ignoreFields);
@@ -46,8 +47,8 @@ private:
     static void editEngine(
             TableType* item,
             const vector<string>& ignoreFields,
-            const function<void(const TableType*)> showItem,
-            const map<string, function<void(TableType*)>>& specifics = {}
+            const function<void()> showItem,
+            const map<string, function<void()>>& specifics = {}
     );
 
 public:

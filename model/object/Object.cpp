@@ -202,9 +202,7 @@ const map<string, TypeName> CarModelClass::fields() const {
 const map<string, TypeName> CarClass::fields() const {
     map<string, TypeName> f;
     f.insert(make_pair("id", TypeName {et_string, "ID"}));
-    f.insert(make_pair("model_id", TypeName {et_string, "Model ID"}));
-//    f.insert(make_pair("mark", TypeName {et_string, "Mark"}));
-//    f.insert(make_pair("model", TypeName {et_string, "Model"}));
+    f.insert(make_pair("model_id", TypeName {et_string, "Model"}));
     f.insert(make_pair("color", TypeName {et_string, "Color"}));
     f.insert(make_pair("price", TypeName {et_number, "Price"}));
     return f;
@@ -223,12 +221,7 @@ const map<string, TypeName> ManagerClass::fields() const {
 
 const map<string, TypeName> CarManagerClass::fields() const {
     map<string, TypeName> f;
-    f.insert(make_pair("car_id", TypeName {et_string, "Car ID"}));
-    f.insert(make_pair("manager_id", TypeName {et_string, "Manager ID"}));
-//    f.insert(make_pair("lastname", TypeName {et_string, "Last name"}));
-//    f.insert(make_pair("city", TypeName {et_string, "City"}));
-//    f.insert(make_pair("phone", TypeName {et_string, "Phone"}));
-//    f.insert(make_pair("mark", TypeName {et_string, "Mark"}));
-//    f.insert(make_pair("model", TypeName {et_string, "Model"}));
+    f.insert(make_pair("car_id", TypeName {et_string, "Car"}));
+    f.insert(make_pair("manager_id", TypeName {et_string, "Manager"}));
     return f;
 }
