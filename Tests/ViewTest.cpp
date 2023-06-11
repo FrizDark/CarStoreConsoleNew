@@ -6,11 +6,11 @@ class TestModel1: public Object {
 public:
     TestModel1() = default;
     TestModel1(const TestModel1& obj): Object(obj) {}
-    const map<std::string, TypeName> fields() const override {
-        map<std::string, TypeName> f;
-        f.insert(std::make_pair("id", TypeName {et_number, "ID"}));
-        f.insert(std::make_pair("itemId", TypeName {et_number, "Item ID"}));
-        f.insert(std::make_pair("name", TypeName {et_string, "Name"}));
+    const map<string, TypeName> fields() const override {
+        map<string, TypeName> f;
+        f.insert(make_pair("id", TypeName {et_number, "ID"}));
+        f.insert(make_pair("itemId", TypeName {et_number, "Item ID"}));
+        f.insert(make_pair("name", TypeName {et_string, "Name"}));
         return f;
     }
     inline Object * clone() const { return new TestModel1(*this); }
@@ -19,11 +19,11 @@ class TestModel2: public Object {
 public:
     TestModel2() = default;
     TestModel2(const TestModel2& obj): Object(obj) {}
-    const map<std::string, TypeName> fields() const override {
-        map<std::string, TypeName> f;
-        f.insert(std::make_pair("id", TypeName {et_number, "ID"}));
-        f.insert(std::make_pair("name", TypeName {et_string, "Name"}));
-        f.insert(std::make_pair("code", TypeName {et_number, "Code"}));
+    const map<string, TypeName> fields() const override {
+        map<string, TypeName> f;
+        f.insert(make_pair("id", TypeName {et_number, "ID"}));
+        f.insert(make_pair("name", TypeName {et_string, "Name"}));
+        f.insert(make_pair("code", TypeName {et_number, "Code"}));
         return f;
     }
     inline Object * clone() const { return new TestModel2(*this); }

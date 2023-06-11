@@ -7,8 +7,8 @@ public:
     TestModel() = default;
     TestModel(const TestModel& obj): Object(obj) {}
 
-    const map<std::string, TypeName> fields() const override {
-        map<std::string, TypeName> f;
+    const map<string, TypeName> fields() const override {
+        map<string, TypeName> f;
         TypeName tn = {et_empty, "Empty"};
         f.insert(make_pair("empty", tn));
         tn = {et_boolean, "Boolean"};
@@ -48,7 +48,7 @@ struct SerializableFixture {
         m1["boolean"] = true;
         m1["number"] = 12.34;
         m1["string"] = "Test text";
-        m1["array"] = std::vector<ElementValue>{10, false, "123"};
+        m1["array"] = vector<ElementValue>{10, false, "123"};
 
         m2["empty"] = {};
         m2["boolean"] = false;

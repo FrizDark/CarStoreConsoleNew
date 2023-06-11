@@ -209,14 +209,6 @@ void UserInterface::carModelMenu() {
         *item = *newItem;
         delete newItem;
         (*item)["id"] = id;
-        for (const auto& car: Car::instance().elements()) {
-            if ((*car)["model_id"] != id) continue;
-            (*car)["mark"] = (*item)["mark"];
-            for (const auto& carManager: CarManager::instance().elements()) {
-                if ((*carManager)["car_id"] != (*car)["id"]) continue;
-                (*carManager)["mark"] = (*car)["mark"];
-            }
-        }
         showBanner(B_SUCCESS);
     });
     actions.emplace_back("Show", [ignoreFields](){
@@ -230,6 +222,7 @@ void UserInterface::carModelMenu() {
 }
 
 void UserInterface::carMenu() {
+    CarModelView carModelView;
     vector<string> ignoreFields = {"id", "model_id"};
     string title = "Car";
     vector<pair<string, std::function<void()>>> actions;
@@ -239,8 +232,6 @@ void UserInterface::carMenu() {
         auto car = addEngine<CarClass>({"id", "model_id", "mark", "model"});
         if (car == nullptr) return;
         (*car)["model_id"] = (*model)["id"];
-        (*car)["mark"] = (*model)["mark"];
-        (*car)["model"] = (*model)["model"];
         if (!findElement(Car::instance().elements(), car)) {
             (*car)["id"] = generateId();
             Car::instance().add(car);
@@ -250,8 +241,12 @@ void UserInterface::carMenu() {
             showBanner(B_ALREADY_EXISTS);
         }
     });
-    actions.emplace_back("Delete", [ignoreFields](){
-        auto item = searchEngine<Car, CarClass>(ignoreFields);
+    actions.emplace_back("Delete", [=](){
+        auto viewItem = searchEngine(carModelView);
+        if (viewItem == nullopt) return;
+        auto item = Car::instance().first([viewItem](const CarClass* item){
+            return (*item)["id"] == viewItem.value()[Car::instance().name() + ".id"];
+        });
         if (item == nullptr) return;
         auto uses = CarManager::instance().filter([item](const CarManagerClass* i) {
             return (*i)["car_id"].toString() == (*item)["id"].toString();
@@ -273,8 +268,6 @@ void UserInterface::carMenu() {
         auto newItem = addEngine<CarClass>({"id", "model_id", "mark", "model"});
         if (newItem == nullptr) return;
         (*newItem)["model_id"] = (*model)["id"];
-        (*newItem)["mark"] = (*model)["mark"];
-        (*newItem)["model"] = (*model)["model"];
         if (findElement(Car::instance().elements(), newItem)) {
             delete newItem;
             showBanner(B_ALREADY_EXISTS);
@@ -283,19 +276,14 @@ void UserInterface::carMenu() {
         *item = *newItem;
         delete newItem;
         (*item)["id"] = id;
-        for (const auto& carManager: CarManager::instance().elements()) {
-            if ((*carManager)["car_id"] != id) continue;
-            (*carManager)["mark"] = (*item)["mark"];
-            (*carManager)["model"] = (*item)["model"];
-        }
         showBanner(B_SUCCESS);
     });
-    actions.emplace_back("Show", [ignoreFields](){
-        printTable(&Car::instance(), ignoreFields);
+    actions.emplace_back("Show", [carModelView](){
+        carModelView.print();
     });
-    actions.emplace_back("Search", [ignoreFields](){
-        auto item = searchEngine<Car, CarClass>(ignoreFields);
-        if (item != nullptr) printTable<CarClass>({item}, ignoreFields);
+    actions.emplace_back("Search", [=](){
+        auto item = searchEngine(carModelView);
+        if (item != nullopt) carModelView.print({*item});
     });
     printMenu(title, actions, "Back");
 }
@@ -344,12 +332,6 @@ void UserInterface::managerMenu() {
         *item = *newItem;
         delete newItem;
         (*item)["id"] = id;
-        for (const auto& carManager: CarManager::instance().elements()) {
-            if ((*carManager)["manager_id"] != id) continue;
-            (*carManager)["lastname"] = (*item)["lastname"];
-            (*carManager)["city"] = (*item)["city"];
-            (*carManager)["phone"] = (*item)["phone"];
-        }
         showBanner(B_SUCCESS);
     });
     actions.emplace_back("Show", [ignoreFields](){
@@ -363,22 +345,22 @@ void UserInterface::managerMenu() {
 }
 
 void UserInterface::carManagerMenu() {
+    CarManagerView carManagerView;
     vector<string> ignoreFields = {"car_id", "manager_id"};
     string title = "Car and manager";
     vector<pair<string, std::function<void()>>> actions;
     actions.emplace_back("Add", [](){
         auto manager = searchEngine<Manager, ManagerClass>({"id"});
         if (manager == nullptr) return;
-        auto car = searchEngine<Car, CarClass>({"id", "model_id"});
+        auto viewCar = searchEngine(CarModelView());
+        if (viewCar == nullopt) return;
+        auto car = Car::instance().first([viewCar](const CarClass* item) {
+            return (*item)["id"] == viewCar.value()[Car::instance().name() + ".id"];
+        });
         if (car == nullptr) return;
         CarManagerClass carManager;
         carManager["car_id"] = (*car)["id"];
-        carManager["mark"] = (*car)["mark"];
-        carManager["model"] = (*car)["model"];
         carManager["manager_id"] = (*manager)["id"];
-        carManager["lastname"] = (*manager)["lastname"];
-        carManager["city"] = (*manager)["city"];
-        carManager["phone"] = (*manager)["phone"];
         if (!findElement(CarManager::instance().elements(), &carManager)) {
             CarManager::instance().add(carManager.clone());
             showBanner(B_SUCCESS);
@@ -402,29 +384,21 @@ void UserInterface::carManagerMenu() {
         if (car == nullptr) return;
         CarManagerClass newItem;
         newItem["car_id"] = (*car)["id"];
-        newItem["mark"] = (*car)["mark"];
-        newItem["model"] = (*car)["model"];
         newItem["manager_id"] = (*manager)["id"];
-        newItem["lastname"] = (*manager)["lastname"];
-        newItem["city"] = (*manager)["city"];
-        newItem["phone"] = (*manager)["phone"];
         *item = newItem;
         showBanner(B_SUCCESS);
     });
-    actions.emplace_back("Show", [ignoreFields](){
-        printTable(&CarManager::instance(), ignoreFields);
+    actions.emplace_back("Show", [carManagerView](){
+        carManagerView.print();
     });
-    actions.emplace_back("Search", [ignoreFields](){
-        auto item = searchEngine<CarManager, CarManagerClass>(ignoreFields);
-        if (item != nullptr) printTable<CarManagerClass>({item}, ignoreFields);
+    actions.emplace_back("Search", [=](){
+        auto item = searchEngine(carManagerView);
+        if (item != nullopt) carManagerView.print({*item});
     });
     printMenu(title, actions, "Back");
 }
 
 void UserInterface::mainMenu() {
-
-    CarModelView carModelView;
-    CarManagerView carManagerView;
 
     string title = "Main menu";
     vector<pair<string, std::function<void()>>> actions;
@@ -432,8 +406,6 @@ void UserInterface::mainMenu() {
     actions.emplace_back("Models", [](){carModelMenu();});
     actions.emplace_back("Cars", [](){carMenu();});
     actions.emplace_back("Cars and managers", [](){carManagerMenu();});
-    actions.emplace_back("Show cars and models", [carModelView](){carModelView.print();});
-    actions.emplace_back("Show cars and managers", [carManagerView](){carManagerView.print();});
     actions.emplace_back("Save all", [](){
         CarModel::instance().save();
         Car::instance().save();
@@ -508,4 +480,47 @@ TableType *UserInterface::searchEngine(const vector<std::string> &ignoreFields) 
         return nullptr;
     }
     return dynamic_cast<TableType*>(result.front());
+}
+
+template<typename View>
+optional<Object> UserInterface::searchEngine(View view) {
+    auto filter = [](list<Object>& elements, const std::function<bool(const Object&)>& f) {
+        for (auto i = elements.begin(); i != elements.end(); i++) {
+            if (!f(*i)) elements.erase(i--);
+        }
+    };
+
+    showBanner(B_SEARCH);
+    auto elements = view.elements();
+    auto ignoreFields = view.ignored();
+    string s;
+    ElementValue find;
+    list<Object> result;
+
+    for (const auto& i: elements) {
+        result.emplace_back(i);
+    }
+
+    for (const auto& field: view.fields()) {
+        if (contains(ignoreFields, field.first) ||
+            field.second.type == et_empty ||
+            field.second.type == et_array ||
+            field.second.type == et_object) continue;
+        if (!result.empty()) view.print(result);
+        find = askForValue(field.second.name, field.second.type);
+        filter(result, [field, find](const Object& i){
+            return i[field.first].toString() == find.toString();
+        });
+        if (result.empty()) {
+            showBanner(B_NOT_FOUND);
+            return nullopt;
+        } else if (result.size() == 1) {
+            return result.front();
+        }
+    }
+    if (result.empty()) {
+        showBanner(B_NOT_FOUND);
+        return nullopt;
+    }
+    return result.front();
 }

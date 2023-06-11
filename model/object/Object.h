@@ -17,7 +17,7 @@ ElementType getType(int id);
 
 struct TypeName {
     ElementType type;
-    std::string name;
+    string name;
 };
 
 class Object;
@@ -28,8 +28,8 @@ struct ElementValue {
     union {
         bool boolean;
         double number;
-        std::string* string;
-        std::vector<ElementValue>* array;
+        string* string;
+        vector<ElementValue>* array;
         Object* object;
     } value {};
 
@@ -37,9 +37,9 @@ struct ElementValue {
     ElementValue(bool i);
     ElementValue(int i);
     ElementValue(double i);
-    ElementValue(const std::string& i);
+    ElementValue(const string& i);
     ElementValue(const char i[]);
-    ElementValue(const std::vector<ElementValue>& i);
+    ElementValue(const vector<ElementValue>& i);
     ElementValue(const Object& i);
 
     ElementValue(const ElementValue&);
@@ -49,7 +49,7 @@ struct ElementValue {
 
     ~ElementValue();
 
-    std::string toString() const;
+    string toString() const;
 
 };
 
@@ -57,7 +57,7 @@ class Object {
 
 private:
 
-    map<std::string, ElementValue> _values {};
+    map<string, ElementValue> _values {};
 
 public:
 
@@ -66,20 +66,20 @@ public:
 
     virtual ~Object() = default;
 
-    inline virtual const map<std::string, TypeName> fields() const { return {}; };
-    inline const map<std::string, ElementValue> values() const { return _values; }
-    inline void insert(pair<std::string, ElementValue> item) { _values.insert(item); }
-    inline void erase(std::string key) { _values.erase(key); }
+    inline virtual const map<string, TypeName> fields() const { return {}; };
+    inline const map<string, ElementValue> values() const { return _values; }
+    inline void insert(pair<string, ElementValue> item) { _values.insert(item); }
+    inline void erase(string key) { _values.erase(key); }
     inline void clear() { _values.clear(); }
 
-    ElementValue& operator[](std::string const &);
-    const ElementValue& operator[](std::string const &) const;
+    ElementValue& operator[](string const &);
+    const ElementValue& operator[](string const &) const;
     Object& operator=(const Object&);
     inline Object* clone() const { return new Object(*this); };
 
     bool operator==(const Object&) const;
 
-    std::string toString() const;
+    string toString() const;
 
 };
 
@@ -89,7 +89,7 @@ public:
     CarModelClass() {}
     CarModelClass(const CarModelClass& obj): Object(obj) {}
 
-    const map<std::string, TypeName> fields() const override;
+    const map<string, TypeName> fields() const override;
     inline CarModelClass * clone() const { return new CarModelClass(*this); }
 
 };
@@ -100,7 +100,7 @@ public:
     CarClass() {}
     CarClass(const CarClass& obj): Object(obj) {}
 
-    const map<std::string, TypeName> fields() const override;
+    const map<string, TypeName> fields() const override;
     inline CarClass * clone() const { return new CarClass(*this); }
 
 };
@@ -111,7 +111,7 @@ public:
     ManagerClass() {}
     ManagerClass(const ManagerClass& obj): Object(obj) {}
 
-    const map<std::string, TypeName> fields() const override;
+    const map<string, TypeName> fields() const override;
     inline ManagerClass * clone() const { return new ManagerClass(*this); }
 
 };
@@ -122,7 +122,7 @@ public:
     CarManagerClass() {}
     CarManagerClass(const CarManagerClass& obj): Object(obj) {}
 
-    const map<std::string, TypeName> fields() const override;
+    const map<string, TypeName> fields() const override;
     inline CarManagerClass * clone() const { return new CarManagerClass(*this); }
 
 };

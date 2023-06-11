@@ -1,6 +1,6 @@
 #include "BasicSerializable.h"
 
-std::string BasicSerializable::dataFilePath = "../data/";
+string BasicSerializable::dataFilePath = "../data/";
 
 void BasicSerializable::save() const {
     pt::ptree root, array;
@@ -75,7 +75,7 @@ pt::ptree BasicSerializable::saver(ElementValue item) const {
     return root;
 }
 
-vector<const Object*> BasicSerializable::filter(std::function<bool(const Object*)> f) const {
+vector<const Object*> BasicSerializable::filter(function<bool(const Object*)> f) const {
     vector<const Object*> out;
     for (auto i: m_elements) {
         if (f(i)) out.emplace_back(i);
@@ -83,10 +83,20 @@ vector<const Object*> BasicSerializable::filter(std::function<bool(const Object*
     return out;
 }
 
-vector<Object*> BasicSerializable::filter(std::function<bool(const Object*)> f) {
+vector<Object*> BasicSerializable::filter(function<bool(const Object*)> f) {
     vector<Object*> out;
     for (auto i: m_elements) {
         if (f(i)) out.emplace_back(i);
     }
     return out;
+}
+
+const Object *BasicSerializable::first(function<bool(const Object *)> f) const {
+    auto result = filter(f);
+    return result.empty() ? nullptr : result.front();
+}
+
+Object *BasicSerializable::first(function<bool(const Object *)> f) {
+    auto result = filter(f);
+    return result.empty() ? nullptr : result.front();
 }

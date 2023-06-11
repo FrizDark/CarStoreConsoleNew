@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_SUITE(ElementValueSuite)
     }
 
     BOOST_FIXTURE_TEST_CASE(elementValueArray, ElementValueFixture) {
-        std::vector<ElementValue> v = {10, true, "Test"};
+        vector<ElementValue> v = {10, true, "Test"};
         ev = ElementValue(v);
         BOOST_CHECK_EQUAL((*ev.value.array)[0].toString(), v[0].toString());
         BOOST_CHECK_EQUAL((*ev.value.array)[1].toString(), v[1].toString());

@@ -1,8 +1,8 @@
 #include "View.h"
 
-pair<std::string, std::string> getToken(std::string key) {
-    vector<std::string> chunks;
-    auto c = [](const std::string& s) { return s; };
+pair<string, string> getToken(string key) {
+    vector<string> chunks;
+    auto c = [](const string& s) { return s; };
     separate(key, chunks, ".");
     if (key.size() >= 2) {
         return make_pair(chunks[0], chunks[1]);
@@ -12,8 +12,8 @@ pair<std::string, std::string> getToken(std::string key) {
 
 View::JoinField::JoinField(
         const BasicSerializable *parent,
-        const std::string &idField,
-        list<pair<std::string, View::JoinField>> children) {
+        const string &idField,
+        list<pair<string, View::JoinField>> children) {
     this->parent = parent;
     this->idField = idField;
     this->children = list(children);
@@ -49,7 +49,7 @@ View::View(const JoinField& join) {
     createJoins(join);
 }
 
-Object View::createObjects(const View::JoinField &join, const std::function<bool(const Object*)>& pred) const {
+Object View::createObjects(const View::JoinField &join, const function<bool(const Object*)>& pred) const {
     auto element = join.parent->filter(pred);
     if (element.empty()) return {};
     Object obj;
@@ -90,7 +90,7 @@ list<Object> View::elements() const {
     return elements;
 }
 
-list<Object> View::filter(const std::function<bool(const Object&)>& f) const {
+list<Object> View::filter(const function<bool(const Object&)>& f) const {
     list<Object> v;
     for (const auto& i: elements()) {
         if (f(i)) v.emplace_back(i);
@@ -98,13 +98,22 @@ list<Object> View::filter(const std::function<bool(const Object&)>& f) const {
     return v;
 }
 
-void ViewPrintable::print() const {
-    auto values = elements();
-    auto format = [](std::string value, size_t width) {
+vector<string> ViewPrintable::ignored() const {
+    vector<string> ignored;
+    for (const auto& i: m_fields) {
+        if (!contains(m_printFields, i.first)) {
+            ignored.emplace_back(i.first);
+        }
+    }
+    return ignored;
+}
+
+void ViewPrintable::print(const list<Object> &values) const {
+    auto format = [](string value, size_t width) {
         if (width > value.size()) value.append(width - value.size(), ' ');
         return value;
     };
-    map<std::string, size_t> columns;
+    map<string, size_t> columns;
     string line = "|";
     for (const auto& field: m_fields) {
         if (!contains(m_printFields, field.first)) continue;
@@ -135,4 +144,12 @@ void ViewPrintable::print() const {
         cout << endl;
     }
     cout << line << endl;
+}
+
+void ViewPrintable::print(function<bool(const Object &)> f) const {
+    print(filter(f));
+}
+
+void ViewPrintable::print() const {
+    print(elements());
 }

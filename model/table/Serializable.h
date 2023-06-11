@@ -24,7 +24,7 @@ private:
             case et_number:
                 try {
                     return { stod(data) };
-                } catch (const std::invalid_argument& ex) {
+                } catch (const invalid_argument& ex) {
                     return {};
                 }
             case et_string: return { data };
@@ -48,7 +48,7 @@ private:
             try {
                 ElementType type = getType(stoi(i.first.substr(4, i.first.size())));
                 values.emplace_back(getValue(root.get_child(i.first), i.second.data(), &type));
-            } catch (const std::invalid_argument& ex) {
+            } catch (const invalid_argument& ex) {
                 // TODO: process this error
             }
         }
@@ -92,7 +92,7 @@ public:
     inline void add(T* m) { BasicSerializable::add(m); }
     inline void remove(T* m) { BasicSerializable::remove(m); }
 
-    list<const T*> filter(std::function<bool(const T*)> f) const {
+    list<const T*> filter(function<bool(const T*)> f) const {
         list<const T*> out;
         for (auto i: m_elements) {
             if (f(static_cast<T*>(i))) out.emplace_back(static_cast<T*>(i));
@@ -100,12 +100,21 @@ public:
         return out;
     }
 
-    list<T*> filter(std::function<bool(const T*)> f) {
+    list<T*> filter(function<bool(const T*)> f) {
         list<T*> out;
         for (auto i: m_elements) {
             if (f(static_cast<T*>(i))) out.emplace_back(static_cast<T*>(i));
         }
         return out;
+    }
+
+    const T* first(function<bool(const T*)> f) const {
+        auto result = filter(f);
+        return result.empty() ? nullptr : result.front();
+    }
+    T* first(function<bool(const T*)> f) {
+        auto result = filter(f);
+        return result.empty() ? nullptr : result.front();
     }
 
 };

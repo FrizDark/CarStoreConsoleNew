@@ -83,7 +83,7 @@ void createCarManagers() {
     auto managersList = Manager::instance().filter([](const ManagerClass*){ return true; });
     vector<const CarClass*> cars(carsList.cbegin(), carsList.cend());
     vector<const ManagerClass*> managers(managersList.cbegin(), managersList.cend());
-    std::pair<int, int> pairs[] = {make_pair(0, 0), make_pair(1, 1), make_pair(2, 1)};
+    pair<int, int> pairs[] = {make_pair(0, 0), make_pair(1, 1), make_pair(2, 1)};
     vector<CarManagerClass> v(3);
     CarManager::instance().clear();
     for (int i = 0; i < 3; i++) {

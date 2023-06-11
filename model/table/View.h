@@ -26,20 +26,20 @@ private:
     JoinField _join;
 
     void createJoins(const JoinField& join, bool noId = false);
-    Object createObjects(const View::JoinField& join, const std::function<bool(const Object*)>& pred) const;
+    Object createObjects(const View::JoinField& join, const function<bool(const Object*)>& pred) const;
 
 protected:
 
-    map<std::string, TypeName> m_fields;
+    map<string, TypeName> m_fields;
 
 public:
 
     View(const JoinField& join);
 
-    inline map<std::string, TypeName> fields() const { return m_fields; }
+    inline map<string, TypeName> fields() const { return m_fields; }
     list<Object> elements() const;
 
-    list<Object> filter(const std::function<bool(const Object&)>& f) const;
+    list<Object> filter(const function<bool(const Object&)>& f) const;
 
 };
 
@@ -47,13 +47,17 @@ class ViewPrintable: public View {
 
 protected:
 
-    vector<std::string> m_printFields;
+    vector<string> m_printFields;
 
 public:
 
     ViewPrintable(const JoinField& joins): View(joins) {};
 
-    virtual void print() const;
+    vector<string> ignored() const;
+
+    void print(const list<Object>& values) const;
+    void print() const;
+    void print(function<bool(const Object&)> f) const;
 
 };
 

@@ -24,11 +24,12 @@ private:
     static void showBanner(Banner type);
     static void printMenu(
             const string& title,
-            const vector<pair<string, std::function<void()>>>& actions,
-            const string& exitName);
+            const vector<pair<string, function<void()>>>& actions,
+            const string& exitName
+    );
     template <typename T>
-    static void printTable(const list<T*>& values, const vector<string>& ignore);
-    static void printTable(const BasicSerializable* table, const vector<string>& ignore);
+    static void printTable(const list<T*>& values, const vector<string>& ignoreFields);
+    static void printTable(const BasicSerializable* table, const vector<string>& ignoreFields);
 
     static void carModelMenu();
     static void carMenu();
@@ -36,9 +37,18 @@ private:
     static void carManagerMenu();
 
     template <typename TableType>
-    static TableType* addEngine(const vector<string>& ignore);
+    static TableType* addEngine(const vector<string>& ignoreFields);
     template <typename Table, typename TableType>
-    static TableType* searchEngine(const vector<string>& ignore);
+    static TableType* searchEngine(const vector<string>& ignoreFields);
+    template <typename View>
+    static optional<Object> searchEngine(View view);
+    template <typename TableType>
+    static void editEngine(
+            TableType* item,
+            const vector<string>& ignoreFields,
+            const function<void(const TableType*)> showItem,
+            const map<string, function<void(TableType*)>>& specifics = {}
+    );
 
 public:
 

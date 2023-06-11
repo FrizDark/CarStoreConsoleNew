@@ -30,19 +30,19 @@ ElementValue::ElementValue(double i) {
     value.number = i;
 }
 
-ElementValue::ElementValue(const std::string& i) {
+ElementValue::ElementValue(const string& i) {
     type = et_string;
-    value.string = new std::string(i);
+    value.string = new string(i);
 }
 
 ElementValue::ElementValue(const char i[]) {
     type = et_string;
-    value.string = new std::string(i);
+    value.string = new string(i);
 }
 
-ElementValue::ElementValue(const std::vector<ElementValue>& i) {
+ElementValue::ElementValue(const vector<ElementValue>& i) {
     type = et_array;
-    value.array = new std::vector(i);
+    value.array = new vector(i);
 }
 
 ElementValue::ElementValue(const Object& i) {
@@ -60,10 +60,10 @@ ElementValue::ElementValue(const ElementValue& obj) {
             value.number = obj.value.number;
             break;
         case et_string:
-            value.string = new std::string(*obj.value.string);
+            value.string = new string(*obj.value.string);
             break;
         case et_array:
-            value.array = new std::vector(*obj.value.array);
+            value.array = new vector(*obj.value.array);
             break;
         case et_object:
             value.object = obj.value.object->clone();
@@ -83,10 +83,10 @@ ElementValue &ElementValue::operator=(const ElementValue &obj) {
             value.number = obj.value.number;
             break;
         case et_string:
-            value.string = new std::string(*obj.value.string);
+            value.string = new string(*obj.value.string);
             break;
         case et_array:
-            value.array = new std::vector(*obj.value.array);
+            value.array = new vector(*obj.value.array);
             break;
         case et_object:
             value.object = obj.value.object->clone();
@@ -125,7 +125,7 @@ ElementValue::~ElementValue() {
     }
 }
 
-std::string ElementValue::toString() const {
+string ElementValue::toString() const {
     auto convertArray = [](const ElementValue& value) {
         return value.toString();
     };
@@ -150,10 +150,10 @@ std::string ElementValue::toString() const {
 }
 
 Object::Object(const Object & obj) {
-    _values = map<std::string, ElementValue>(obj._values);
+    _values = map<string, ElementValue>(obj._values);
 }
 
-ElementValue &Object::operator[](const std::string & i) {
+ElementValue &Object::operator[](const string & i) {
     auto value = _values.find(i);
     if (value == _values.end()) {
         _values[i] = ElementValue();
@@ -161,16 +161,16 @@ ElementValue &Object::operator[](const std::string & i) {
     return _values[i];
 }
 
-const ElementValue &Object::operator[](const std::string & i) const {
+const ElementValue &Object::operator[](const string & i) const {
     auto value = _values.find(i);
     if (value == _values.end()) {
-        throw std::out_of_range("Key not found.");
+        throw out_of_range("Key not found.");
     }
     return _values.at(i);
 }
 
 Object &Object::operator=(const Object & obj) {
-    _values = map<std::string, ElementValue>(obj._values);
+    _values = map<string, ElementValue>(obj._values);
     return *this;
 }
 
@@ -183,52 +183,52 @@ bool Object::operator==(const Object &obj) const {
     return true;
 }
 
-std::string Object::toString() const {
-    auto convert = [](std::pair<std::string, ElementValue> i) {
+string Object::toString() const {
+    auto convert = [](pair<string, ElementValue> i) {
         return "(" + i.first + ":" + i.second.toString() + ")";
     };
     return join(values(), convert, ", ");
 }
 
-const map<std::string, TypeName> CarModelClass::fields() const {
-    map<std::string, TypeName> f;
-    f.insert(std::make_pair("id", TypeName {et_string, "ID"}));
-    f.insert(std::make_pair("mark", TypeName {et_string, "Mark"}));
-    f.insert(std::make_pair("model", TypeName {et_string, "Model"}));
-    f.insert(std::make_pair("type", TypeName {et_string, "Type"}));
+const map<string, TypeName> CarModelClass::fields() const {
+    map<string, TypeName> f;
+    f.insert(make_pair("id", TypeName {et_string, "ID"}));
+    f.insert(make_pair("mark", TypeName {et_string, "Mark"}));
+    f.insert(make_pair("model", TypeName {et_string, "Model"}));
+    f.insert(make_pair("type", TypeName {et_string, "Type"}));
     return f;
 }
 
-const map<std::string, TypeName> CarClass::fields() const {
-    map<std::string, TypeName> f;
-    f.insert(std::make_pair("id", TypeName {et_string, "ID"}));
-    f.insert(std::make_pair("model_id", TypeName {et_string, "Model ID"}));
-    f.insert(std::make_pair("mark", TypeName {et_string, "Mark"}));
-    f.insert(std::make_pair("model", TypeName {et_string, "Model"}));
-    f.insert(std::make_pair("color", TypeName {et_string, "Color"}));
-    f.insert(std::make_pair("price", TypeName {et_number, "Price"}));
+const map<string, TypeName> CarClass::fields() const {
+    map<string, TypeName> f;
+    f.insert(make_pair("id", TypeName {et_string, "ID"}));
+    f.insert(make_pair("model_id", TypeName {et_string, "Model ID"}));
+//    f.insert(make_pair("mark", TypeName {et_string, "Mark"}));
+//    f.insert(make_pair("model", TypeName {et_string, "Model"}));
+    f.insert(make_pair("color", TypeName {et_string, "Color"}));
+    f.insert(make_pair("price", TypeName {et_number, "Price"}));
     return f;
 }
 
-const map<std::string, TypeName> ManagerClass::fields() const {
-    map<std::string, TypeName> f;
-    f.insert(std::make_pair("id", TypeName {et_string, "ID"}));
-    f.insert(std::make_pair("firstname", TypeName {et_string, "First name"}));
-    f.insert(std::make_pair("lastname", TypeName {et_string, "Last name"}));
-    f.insert(std::make_pair("age", TypeName {et_number, "Age"}));
-    f.insert(std::make_pair("city", TypeName {et_string, "City"}));
-    f.insert(std::make_pair("phone", TypeName {et_string, "Phone"}));
+const map<string, TypeName> ManagerClass::fields() const {
+    map<string, TypeName> f;
+    f.insert(make_pair("id", TypeName {et_string, "ID"}));
+    f.insert(make_pair("firstname", TypeName {et_string, "First name"}));
+    f.insert(make_pair("lastname", TypeName {et_string, "Last name"}));
+    f.insert(make_pair("age", TypeName {et_number, "Age"}));
+    f.insert(make_pair("city", TypeName {et_string, "City"}));
+    f.insert(make_pair("phone", TypeName {et_string, "Phone"}));
     return f;
 }
 
-const map<std::string, TypeName> CarManagerClass::fields() const {
-    map<std::string, TypeName> f;
-    f.insert(std::make_pair("car_id", TypeName {et_string, "Car ID"}));
-    f.insert(std::make_pair("manager_id", TypeName {et_string, "Manager ID"}));
-    f.insert(std::make_pair("lastname", TypeName {et_string, "Last name"}));
-    f.insert(std::make_pair("city", TypeName {et_string, "City"}));
-    f.insert(std::make_pair("phone", TypeName {et_string, "Phone"}));
-    f.insert(std::make_pair("mark", TypeName {et_string, "Mark"}));
-    f.insert(std::make_pair("model", TypeName {et_string, "Model"}));
+const map<string, TypeName> CarManagerClass::fields() const {
+    map<string, TypeName> f;
+    f.insert(make_pair("car_id", TypeName {et_string, "Car ID"}));
+    f.insert(make_pair("manager_id", TypeName {et_string, "Manager ID"}));
+//    f.insert(make_pair("lastname", TypeName {et_string, "Last name"}));
+//    f.insert(make_pair("city", TypeName {et_string, "City"}));
+//    f.insert(make_pair("phone", TypeName {et_string, "Phone"}));
+//    f.insert(make_pair("mark", TypeName {et_string, "Mark"}));
+//    f.insert(make_pair("model", TypeName {et_string, "Model"}));
     return f;
 }
