@@ -192,7 +192,12 @@ void UserInterface::carModelMenu() {
         });
         if (!uses.empty()) {
             showBanner(B_USED_IN);
-            printTable(uses, {"id", "model_id"});
+            CarModelView().print([uses](const Object& item){
+                for (const auto& i: uses) {
+                    return item[Car::instance().name() + ".id"] == (*i)["id"];
+                }
+                return false;
+            });
             return;
         }
         CarModel::instance().remove(item);
@@ -258,7 +263,12 @@ void UserInterface::carMenu() {
         });
         if (!uses.empty()) {
             showBanner(B_USED_IN);
-            printTable(uses, {"car_id", "manager_id"});
+            CarManagerView().print([uses](const Object& item){
+                for (const auto& i: uses) {
+                    return item[CarManager::instance().name() + ".car_id"] == (*i)["car_id"];
+                }
+                return false;
+            });
             return;
         }
         Car::instance().remove(item);
@@ -330,7 +340,12 @@ void UserInterface::managerMenu() {
         });
         if (!uses.empty()) {
             showBanner(B_USED_IN);
-            printTable(uses, {"car_id", "manager_id"});
+            CarManagerView().print([uses](const Object& item){
+                for (const auto& i: uses) {
+                    return item[CarManager::instance().name() + ".manager_id"] == (*i)["manager_id"];
+                }
+                return false;
+            });
             return;
         }
         Manager::instance().remove(item);
@@ -388,8 +403,13 @@ void UserInterface::carManagerMenu() {
             showBanner(B_ALREADY_EXISTS);
         }
     });
-    actions.emplace_back("Delete", [ignoreFields](){
-        auto item = searchEngine<CarManager, CarManagerClass>(ignoreFields);
+    actions.emplace_back("Delete", [=](){
+        auto viewItem = searchEngine(carManagerView);
+        if (viewItem == nullopt) return;
+        auto item = CarManager::instance().first([viewItem](const CarManagerClass* item){
+            return (*item)["car_id"] == (*viewItem)[CarManager::instance().name() + ".car_id"] &&
+                (*item)["manager_id"] == (*viewItem)[CarManager::instance().name() + ".manager_id"];
+        });
         if (item != nullptr) {
             CarManager::instance().remove(item);
             showBanner(B_SUCCESS);
