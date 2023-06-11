@@ -1,4 +1,4 @@
-#include "../model/table/Serializable.h"
+#include "../model/table/Table.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -26,14 +26,14 @@ public:
     inline TestModel * clone() const { return new TestModel(*this); }
 };
 
-class TestSerializable: public Serializable<TestModel> {
+class TestSerializable: public Table<TestModel> {
 public:
     static auto& instance() {
         static TestSerializable test;
         return test;
     }
 
-    TestSerializable(): Serializable<TestModel>("Test") { dataFilePath = "./"; }
+    TestSerializable(): Table<TestModel>("Test") { dataFilePath = "./"; }
 };
 
 BOOST_AUTO_TEST_SUITE(SerializableTestSuite)

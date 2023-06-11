@@ -28,21 +28,21 @@ public:
     }
     inline Object * clone() const { return new TestModel2(*this); }
 };
-class TestTable1: public Serializable<TestModel1> {
+class TestTable1: public Table<TestModel1> {
 public:
     static auto& instance() {
         static TestTable1 table;
         return table;
     }
-    TestTable1(): Serializable<TestModel1>("Test1") {}
+    TestTable1(): Table<TestModel1>("Test1") {}
 };
-class TestTable2: public Serializable<TestModel2> {
+class TestTable2: public Table<TestModel2> {
 public:
     static auto& instance() {
         static TestTable2 table;
         return table;
     }
-    TestTable2(): Serializable<TestModel2>("Test2") {}
+    TestTable2(): Table<TestModel2>("Test2") {}
 };
 
 class TestView: public View {

@@ -11,7 +11,7 @@ pair<string, string> getToken(string key) {
 }
 
 View::JoinField::JoinField(
-        const BasicSerializable *parent,
+        const BasicTable *parent,
         const string &idField,
         list<pair<string, View::JoinField>> children) {
     this->parent = parent;

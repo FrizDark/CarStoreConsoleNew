@@ -30,7 +30,7 @@ private:
     );
     template <typename T>
     static void printTable(const list<T*>& values, const vector<string>& ignoreFields);
-    static void printTable(const BasicSerializable* table, const vector<string>& ignoreFields);
+    static void printTable(const BasicTable* table, const vector<string>& ignoreFields);
 
     static void carModelMenu();
     static void carMenu();
@@ -47,7 +47,7 @@ private:
     static void editEngine(
             TableType* item,
             const vector<string>& ignoreFields,
-            const function<void()> showItem,
+            const function<void()>& showItem,
             const map<string, function<void()>>& specifics = {}
     );
 

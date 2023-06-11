@@ -1,7 +1,7 @@
 #ifndef CARSTORE_VIEW_H
 #define CARSTORE_VIEW_H
 
-#include "Serializable.h"
+#include "Table.h"
 
 class View {
 
@@ -9,12 +9,12 @@ public:
 
     struct JoinField {
 
-        const BasicSerializable* parent;
+        const BasicTable* parent;
         string idField;
         list<pair<string, JoinField>> children;
 
         JoinField() = default;
-        JoinField(const BasicSerializable* parent, const string& idField, list<pair<string, JoinField>> children = {});
+        JoinField(const BasicTable* parent, const string& idField, list<pair<string, JoinField>> children = {});
 
         JoinField(const JoinField& obj);
         JoinField& operator=(const JoinField& obj);

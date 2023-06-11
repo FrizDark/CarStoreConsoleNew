@@ -1,10 +1,10 @@
-#ifndef CARSTORE_BASICSERIALIZABLE_H
-#define CARSTORE_BASICSERIALIZABLE_H
+#ifndef CARSTORE_BASICTABLE_H
+#define CARSTORE_BASICTABLE_H
 
 
 #include "../object/Object.h"
 
-class BasicSerializable {
+class BasicTable {
 
 protected:
 
@@ -12,14 +12,14 @@ protected:
     string m_path {};
     list<Object*> m_elements {};
 
-    BasicSerializable(const string& name): m_name(name) {}
+    BasicTable(const string& name): m_name(name) {}
 
     pt::ptree saver(const Object& item) const;
     pt::ptree saver(ElementValue i) const;
 
 public:
 
-    virtual ~BasicSerializable() = default;
+    virtual ~BasicTable() = default;
 
     static string dataFilePath;
 
@@ -42,4 +42,4 @@ public:
 };
 
 
-#endif //CARSTORE_BASICSERIALIZABLE_H
+#endif //CARSTORE_BASICTABLE_H

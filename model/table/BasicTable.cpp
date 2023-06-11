@@ -1,8 +1,8 @@
-#include "BasicSerializable.h"
+#include "BasicTable.h"
 
-string BasicSerializable::dataFilePath = "../data/";
+string BasicTable::dataFilePath = "../data/";
 
-void BasicSerializable::save() const {
+void BasicTable::save() const {
     pt::ptree root, array;
     for(const auto& element: m_elements) {
         array.push_back(make_pair("item", saver(*element)));
@@ -12,7 +12,7 @@ void BasicSerializable::save() const {
     pt::write_xml(fileName, root);
 }
 
-pt::ptree BasicSerializable::saver(const Object &item) const {
+pt::ptree BasicTable::saver(const Object &item) const {
     pt::ptree root, array, element;
     for (const auto& value: item.values()) {
         if (!item.fields().empty() && !item.fields().contains(value.first)) continue;
@@ -46,7 +46,7 @@ pt::ptree BasicSerializable::saver(const Object &item) const {
     return root;
 }
 
-pt::ptree BasicSerializable::saver(ElementValue item) const {
+pt::ptree BasicTable::saver(ElementValue item) const {
     pt::ptree root, array;
     switch(item.type) {
         case et_empty:
@@ -75,7 +75,7 @@ pt::ptree BasicSerializable::saver(ElementValue item) const {
     return root;
 }
 
-vector<const Object*> BasicSerializable::filter(function<bool(const Object*)> f) const {
+vector<const Object*> BasicTable::filter(function<bool(const Object*)> f) const {
     vector<const Object*> out;
     for (auto i: m_elements) {
         if (f(i)) out.emplace_back(i);
@@ -83,7 +83,7 @@ vector<const Object*> BasicSerializable::filter(function<bool(const Object*)> f)
     return out;
 }
 
-vector<Object*> BasicSerializable::filter(function<bool(const Object*)> f) {
+vector<Object*> BasicTable::filter(function<bool(const Object*)> f) {
     vector<Object*> out;
     for (auto i: m_elements) {
         if (f(i)) out.emplace_back(i);
@@ -91,12 +91,12 @@ vector<Object*> BasicSerializable::filter(function<bool(const Object*)> f) {
     return out;
 }
 
-const Object *BasicSerializable::first(function<bool(const Object *)> f) const {
+const Object *BasicTable::first(function<bool(const Object *)> f) const {
     auto result = filter(f);
     return result.empty() ? nullptr : result.front();
 }
 
-Object *BasicSerializable::first(function<bool(const Object *)> f) {
+Object *BasicTable::first(function<bool(const Object *)> f) {
     auto result = filter(f);
     return result.empty() ? nullptr : result.front();
 }

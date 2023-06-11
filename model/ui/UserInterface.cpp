@@ -163,7 +163,7 @@ void UserInterface::printTable(const list<T *> &values, const vector<std::string
     cout << line << endl;
 }
 
-void UserInterface::printTable(const BasicSerializable* table, const vector<std::string> &ignoreFields) {
+void UserInterface::printTable(const BasicTable* table, const vector<std::string> &ignoreFields) {
     auto elements = table->elements();
     printTable<Object>({elements.begin(), elements.end()}, ignoreFields);
 }
@@ -580,7 +580,7 @@ template<typename TableType>
 void UserInterface::editEngine(
         TableType *item,
         const vector<std::string> &ignoreFields,
-        const function<void()> showItem,
+        const function<void()>& showItem,
         const map<std::string, function<void()>> &specifics
         ) {
     vector<pair<string, function<void()>>> actions;

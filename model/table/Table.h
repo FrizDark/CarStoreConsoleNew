@@ -1,10 +1,10 @@
-#ifndef CARSTORE_SERIALIZABLE_H
-#define CARSTORE_SERIALIZABLE_H
+#ifndef CARSTORE_TABLE_H
+#define CARSTORE_TABLE_H
 
-#include "BasicSerializable.h"
+#include "BasicTable.h"
 
 template<class T>
-class Serializable: public BasicSerializable {
+class Table: public BasicTable {
 
 private:
 
@@ -57,7 +57,7 @@ private:
 
 public:
 
-    Serializable(const string name): BasicSerializable(name) {}
+    Table(const string name): BasicTable(name) {}
 
     bool load() {
         pt::ptree root;
@@ -89,8 +89,8 @@ public:
         return true;
     }
 
-    inline void add(T* m) { BasicSerializable::add(m); }
-    inline void remove(T* m) { BasicSerializable::remove(m); }
+    inline void add(T* m) { BasicTable::add(m); }
+    inline void remove(T* m) { BasicTable::remove(m); }
 
     list<const T*> filter(function<bool(const T*)> f) const {
         list<const T*> out;
@@ -119,7 +119,7 @@ public:
 
 };
 
-class CarModel: public Serializable<CarModelClass> {
+class CarModel: public Table<CarModelClass> {
 
 public:
 
@@ -128,11 +128,11 @@ public:
         return table;
     }
 
-    CarModel(): Serializable<CarModelClass>("Models") {}
+    CarModel(): Table<CarModelClass>("Models") {}
 
 };
 
-class Car: public Serializable<CarClass> {
+class Car: public Table<CarClass> {
 
 public:
 
@@ -141,11 +141,11 @@ public:
         return table;
     }
 
-    Car(): Serializable<CarClass>("Cars") {}
+    Car(): Table<CarClass>("Cars") {}
 
 };
 
-class Manager: public Serializable<ManagerClass> {
+class Manager: public Table<ManagerClass> {
 
 public:
 
@@ -154,11 +154,11 @@ public:
         return table;
     }
 
-    Manager(): Serializable<ManagerClass>("Managers") {}
+    Manager(): Table<ManagerClass>("Managers") {}
 
 };
 
-class CarManager: public Serializable<CarManagerClass> {
+class CarManager: public Table<CarManagerClass> {
 
 public:
 
@@ -167,8 +167,8 @@ public:
         return table;
     }
 
-    CarManager(): Serializable<CarManagerClass>("CarManagers") {}
+    CarManager(): Table<CarManagerClass>("CarManagers") {}
 
 };
 
-#endif //CARSTORE_SERIALIZABLE_H
+#endif //CARSTORE_TABLE_H
