@@ -42,10 +42,10 @@ struct ElementValue {
     ElementValue(const vector<ElementValue>& i);
     ElementValue(const Object& i);
 
-    ElementValue(const ElementValue&);
-    ElementValue& operator=(const ElementValue&);
+    ElementValue(const ElementValue& obj);
+    ElementValue& operator=(const ElementValue& obj);
 
-    bool operator==(const ElementValue&) const;
+    bool operator==(const ElementValue& obj) const;
 
     ~ElementValue();
 
@@ -58,6 +58,12 @@ class Object {
 private:
 
     map<string, ElementValue> _values {};
+
+    pt::ptree encoder(ElementValue item) const;
+
+    ElementValue decoder(pt::ptree element, const string& data, const ElementType* field = nullptr) const;
+    ElementValue decodeObject(pt::ptree root) const;
+    ElementValue decodeArray(pt::ptree root) const;
 
 public:
 
@@ -72,14 +78,19 @@ public:
     inline void erase(string key) { _values.erase(key); }
     inline void clear() { _values.clear(); }
 
-    ElementValue& operator[](string const &);
-    const ElementValue& operator[](string const &) const;
-    Object& operator=(const Object&);
+    ElementValue& operator[](const string& key);
+    const ElementValue& operator[](const string& key) const;
+    Object& operator=(const Object& obj);
     inline Object* clone() const { return new Object(*this); };
 
     bool operator==(const Object&) const;
 
     string toString() const;
+
+    pt::ptree encode() const;
+    bool decode(const pt::ptree& root);
+    void save(const string& path) const;
+    bool load(const string& path);
 
 };
 

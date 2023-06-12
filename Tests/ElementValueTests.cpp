@@ -10,36 +10,36 @@ BOOST_AUTO_TEST_SUITE(ElementValueSuite)
         ElementValue ev;
     };
 
-    BOOST_FIXTURE_TEST_CASE(elementValueEmpty, ElementValueFixture) {
+    BOOST_FIXTURE_TEST_CASE(ElementValueEmpty, ElementValueFixture) {
         ev = ElementValue();
         BOOST_CHECK_EQUAL(ev.type, et_empty);
     }
 
-    BOOST_FIXTURE_TEST_CASE(elementValueBoolean, ElementValueFixture) {
+    BOOST_FIXTURE_TEST_CASE(ElementValueBoolean, ElementValueFixture) {
         ev = ElementValue(true);
         BOOST_CHECK_EQUAL(ev.value.boolean, true);
         BOOST_CHECK_EQUAL(ev.type, et_boolean);
     }
 
-    BOOST_FIXTURE_TEST_CASE(elementValueInteger, ElementValueFixture) {
+    BOOST_FIXTURE_TEST_CASE(ElementValueInteger, ElementValueFixture) {
         ev = ElementValue(10);
         BOOST_CHECK_EQUAL(ev.value.number, 10);
         BOOST_CHECK_EQUAL(ev.type, et_number);
     }
 
-    BOOST_FIXTURE_TEST_CASE(elementValueDouble, ElementValueFixture) {
+    BOOST_FIXTURE_TEST_CASE(ElementValueDouble, ElementValueFixture) {
         ev = ElementValue(25.1234);
         BOOST_CHECK_EQUAL(ev.value.number, 25.1234);
         BOOST_CHECK_EQUAL(ev.type, et_number);
     }
 
-    BOOST_FIXTURE_TEST_CASE(elementValueString, ElementValueFixture) {
+    BOOST_FIXTURE_TEST_CASE(ElementValueString, ElementValueFixture) {
         ev = ElementValue("TEST STRING");
         BOOST_CHECK_EQUAL(*ev.value.string, "TEST STRING");
         BOOST_CHECK_EQUAL(ev.type, et_string);
     }
 
-    BOOST_FIXTURE_TEST_CASE(elementValueArray, ElementValueFixture) {
+    BOOST_FIXTURE_TEST_CASE(ElementValueArray, ElementValueFixture) {
         vector<ElementValue> v = {10, true, "Test"};
         ev = ElementValue(v);
         BOOST_CHECK_EQUAL((*ev.value.array)[0].toString(), v[0].toString());
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_SUITE(ElementValueSuite)
         BOOST_CHECK_EQUAL(ev.type, et_array);
     }
 
-    BOOST_FIXTURE_TEST_CASE(elementValueObject, ElementValueFixture) {
+    BOOST_FIXTURE_TEST_CASE(ElementValueObject, ElementValueFixture) {
         Object dc;
         dc["a"] = 10;
         dc["b"] = true;

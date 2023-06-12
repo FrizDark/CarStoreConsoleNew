@@ -26,23 +26,40 @@ public:
     inline TestModel * clone() const { return new TestModel(*this); }
 };
 
-class TestSerializable: public Table<TestModel> {
+class TestTable: public Table<TestModel> {
 public:
     static auto& instance() {
-        static TestSerializable test;
+        static TestTable test;
         return test;
     }
 
-    TestSerializable(): Table<TestModel>("Test") { dataFilePath = "./"; }
+    TestTable(): Table<TestModel>("Test") { dataFilePath = "./"; }
 };
 
-BOOST_AUTO_TEST_SUITE(SerializableTestSuite)
+BOOST_AUTO_TEST_SUITE(TableTestSuite)
 
-struct SerializableFixture {
-    TestSerializable test;
+struct TableFixture {
+    TestModel testModel;
+    TestTable testTable;
 };
 
-    BOOST_FIXTURE_TEST_CASE(SerializableInit, SerializableFixture) {
+    BOOST_FIXTURE_TEST_CASE(ModelSaveLoad, TableFixture) {
+        Object m;
+        m["empty"] = {};
+        m["boolean"] = true;
+        m["number"] = 12.34;
+        m["string"] = "Test text";
+        m["array"] = vector<ElementValue>{10, false, "123"};
+        string path = "./TestModel.xml";
+        m.save(path);
+        testModel.load(path);
+        BOOST_CHECK_EQUAL(testModel["boolean"].value.boolean, true);
+        BOOST_CHECK_EQUAL(testModel["number"].value.number, 12.34);
+        BOOST_CHECK_EQUAL(*testModel["string"].value.string, "Test text");
+        BOOST_CHECK_EQUAL(testModel["array"].value.array->front().value.number, 10);
+    }
+
+    BOOST_FIXTURE_TEST_CASE(TableInit, TableFixture) {
         TestModel m1, m2;
         m1["empty"] = {};
         m1["boolean"] = true;
@@ -56,17 +73,17 @@ struct SerializableFixture {
         m2["string"] = "Some random text";
         m2["object"] = m1;
 
-        test.add(m1.clone());
-        test.add(m2.clone());
+        testTable.add(m1.clone());
+        testTable.add(m2.clone());
 
-        BOOST_CHECK_EQUAL(test.elements().size(), 2);
-        test.save();
+        BOOST_CHECK_EQUAL(testTable.elements().size(), 2);
+        testTable.save();
     }
 
-    BOOST_FIXTURE_TEST_CASE(SerializableLoad, SerializableFixture) {
-        test.load();
-        BOOST_CHECK_EQUAL(test.elements().size(), 2);
-        for (const auto& element: test.elements()) {
+    BOOST_FIXTURE_TEST_CASE(TableLoad, TableFixture) {
+        testTable.load();
+        BOOST_CHECK_EQUAL(testTable.elements().size(), 2);
+        for (const auto& element: testTable.elements()) {
             BOOST_CHECK_EQUAL(element->values().size(), 5);
             if ((*element)["number"].value.number == 12.34) {
                 BOOST_CHECK_EQUAL((*element)["boolean"].value.boolean, true);

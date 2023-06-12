@@ -6,55 +6,6 @@
 template<class T>
 class Table: public BasicTable {
 
-private:
-
-    ElementValue getValue(pt::ptree element, const string& data, const ElementType* field = nullptr) {
-        ElementType fieldType;
-        try {
-            ElementType type = getType(element.get<int>("<xmlattr>.type"));
-            fieldType = field == nullptr ? type : *field;
-            if (fieldType != type) return {};
-        } catch (const pt::ptree_bad_path& ex) {
-            if (field == nullptr) return {};
-            fieldType = *field;
-        }
-        switch (fieldType) {
-            case et_empty: return {};
-            case et_boolean: return { data == "true" };
-            case et_number:
-                try {
-                    return { stod(data) };
-                } catch (const invalid_argument& ex) {
-                    return {};
-                }
-            case et_string: return { data };
-            case et_array: return loadArray(element);
-            case et_object: return loadObject(element);
-        }
-    }
-
-    ElementValue loadObject(pt::ptree root) {
-        Object *child = new Object();
-        root.erase("<xmlattr>");
-        for(auto &i : root) {
-            (*child)[i.first] = getValue(root.get_child(i.first), i.second.data());
-        }
-        return { *child };
-    }
-    ElementValue loadArray(pt::ptree root) {
-        vector<ElementValue> values;
-        root.erase("<xmlattr>");
-        for (const auto& i: root) {
-            try {
-                ElementType type = getType(stoi(i.first.substr(4, i.first.size())));
-                values.emplace_back(getValue(root.get_child(i.first), i.second.data(), &type));
-            } catch (const invalid_argument& ex) {
-                // TODO: process this error
-            }
-        }
-        return values.empty() ? ElementValue() : ElementValue(values);
-    }
-
 public:
 
     Table(const string name): BasicTable(name) {}
@@ -71,14 +22,10 @@ public:
         clear();
 
         T* item = new T();
-        auto fields = item->fields();
 
         try {
             for(const auto& element: root.get_child(name())) {
-                for (const auto& value: element.second) {
-                    ElementType type = fields.find(value.first)->second.type;
-                    (*item)[value.first] = getValue(element.second.get_child(value.first), value.second.data(), &type);
-                }
+                item->decode(element.second);
                 m_elements.emplace_back(item->clone());
                 item->clear();
             }

@@ -153,23 +153,23 @@ Object::Object(const Object & obj) {
     _values = map<string, ElementValue>(obj._values);
 }
 
-ElementValue &Object::operator[](const string & i) {
-    auto value = _values.find(i);
+ElementValue &Object::operator[](const string& key) {
+    auto value = _values.find(key);
     if (value == _values.end()) {
-        _values[i] = ElementValue();
+        _values[key] = ElementValue();
     }
-    return _values[i];
+    return _values[key];
 }
 
-const ElementValue &Object::operator[](const string & i) const {
-    auto value = _values.find(i);
+const ElementValue &Object::operator[](const string& key) const {
+    auto value = _values.find(key);
     if (value == _values.end()) {
         throw out_of_range("Key not found.");
     }
-    return _values.at(i);
+    return _values.at(key);
 }
 
-Object &Object::operator=(const Object & obj) {
+Object &Object::operator=(const Object &obj) {
     _values = map<string, ElementValue>(obj._values);
     return *this;
 }
@@ -188,6 +188,151 @@ string Object::toString() const {
         return "(" + i.first + ":" + i.second.toString() + ")";
     };
     return join(values(), convert, ", ");
+}
+
+pt::ptree Object::encode() const {
+    pt::ptree root, array, element;
+    for (const auto& value: values()) {
+        if (!fields().empty() && !fields().contains(value.first)) continue;
+        switch(value.second.type) {
+            case et_empty:
+                root.put(value.first, nullptr);
+                break;
+            case et_boolean:
+                root.put(value.first, value.second.value.boolean);
+                break;
+            case et_number:
+                root.put(value.first, value.second.value.number);
+                break;
+            case et_string:
+                root.put(value.first, *value.second.value.string);
+                break;
+            case et_array:
+                for (const auto& i: *value.second.value.array) {
+                    array.add_child("item" + to_string(i.type), encoder(i));
+                    element.clear();
+                }
+                root.put_child(value.first, array);
+                array.clear();
+                break;
+            case et_object:
+                root.put_child(value.first, value.second.value.object->encode());
+                break;
+        }
+        root.put(value.first + ".<xmlattr>.type", value.second.type);
+    }
+    return root;
+}
+
+pt::ptree Object::encoder(ElementValue item) const {
+    pt::ptree root, array;
+    switch(item.type) {
+        case et_empty:
+            root.put_value(NULL);
+            break;
+        case et_boolean:
+            root.put_value(item.value.boolean);
+            break;
+        case et_number:
+            root.put_value(item.value.number);
+            break;
+        case et_string:
+            root.put_value(*item.value.string);
+            break;
+        case et_array:
+            for (const auto& i: *item.value.array) {
+                array.put_child("item", encoder(i));
+                array.put("item.<xmlattr>.type", i.type);
+            }
+            root.add_child("array", array);
+            break;
+        case et_object:
+            root.add_child("object", item.value.object->encode());
+            break;
+    }
+    return root;
+}
+
+ElementValue Object::decoder(pt::ptree element, const std::string &data, const ElementType *field) const {
+    ElementType fieldType;
+    try {
+        ElementType type = getType(element.get<int>("<xmlattr>.type"));
+        fieldType = field == nullptr ? type : *field;
+        if (fieldType != type) return {};
+    } catch (const pt::ptree_bad_path& ex) {
+        if (field == nullptr) return {};
+        fieldType = *field;
+    }
+    switch (fieldType) {
+        case et_empty: return {};
+        case et_boolean: return { data == "true" };
+        case et_number:
+            try {
+                return { stod(data) };
+            } catch (const invalid_argument& ex) {
+                return { 0.0 };
+            }
+        case et_string: return { data };
+        case et_array: return decodeArray(element);
+        case et_object: return decodeObject(element);
+    }
+}
+
+ElementValue Object::decodeObject(pt::ptree root) const {
+    Object *child = new Object();
+    root.erase("<xmlattr>");
+    for(auto &i : root) {
+        (*child)[i.first] = decoder(root.get_child(i.first), i.second.data());
+    }
+    return { *child };
+}
+
+ElementValue Object::decodeArray(pt::ptree root) const {
+    vector<ElementValue> values;
+    root.erase("<xmlattr>");
+    for (const auto& i: root) {
+        try {
+            ElementType type = getType(stoi(i.first.substr(4, i.first.size())));
+            values.emplace_back(decoder(root.get_child(i.first), i.second.data(), &type));
+        } catch (const invalid_argument& ex) {
+            // TODO: process this error
+        }
+    }
+    return values.empty() ? ElementValue() : ElementValue(values);
+}
+
+bool Object::decode(const pt::ptree &root) {
+    auto f = fields();
+    clear();
+    try {
+        for (const auto& value: root) {
+            auto result = f.find(value.first);
+            (*this)[value.first] = decoder(
+                    root.get_child(value.first),
+                    value.second.data(),
+                    result == fields().end() ? &result->second.type : nullptr
+            );
+        }
+        return true;
+    } catch(const pt::ptree_bad_path& ex) {
+        return false;
+    }
+}
+
+void Object::save(const std::string &path) const {
+    pt::ptree root;
+    root.put_child("item", encode());
+    pt::write_xml(path, root);
+}
+
+bool Object::load(const std::string &path) {
+    pt::ptree root;
+    try {
+        pt::read_xml(path, root);
+    } catch (const boost::property_tree::xml_parser_error& ex) {
+        return false;
+    }
+    return decode(root.get_child("item"));
 }
 
 const map<string, TypeName> CarModelClass::fields() const {

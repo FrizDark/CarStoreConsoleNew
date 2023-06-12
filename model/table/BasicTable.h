@@ -14,9 +14,6 @@ protected:
 
     BasicTable(const string& name): m_name(name) {}
 
-    pt::ptree saver(const Object& item) const;
-    pt::ptree saver(ElementValue i) const;
-
 public:
 
     virtual ~BasicTable() = default;
