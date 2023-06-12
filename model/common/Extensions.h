@@ -60,6 +60,15 @@ inline vector<T2> convert(const vector<T>& v, function<T2(T)> f) {
     return vv;
 }
 
+template <typename T, typename T2>
+inline list<T2> convert(const list<T>& v, function<T2(T)> f) {
+    list<T2> vv;
+    for (const auto& i: v) {
+        vv.emplace_back(f(i));
+    }
+    return vv;
+}
+
 template <typename T, typename T2, typename F>
 inline map<T, T2> filter(const map<T, T2> m, F f) {
     map<T, T2> mm;

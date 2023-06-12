@@ -3,6 +3,7 @@
 
 
 #include "../table/View.h"
+#include "../configuration/Configuration.h"
 
 class UserInterface {
 
@@ -15,7 +16,8 @@ private:
         B_SEARCH,
         B_CREATE,
         B_USED_IN,
-        B_ALREADY_EXISTS
+        B_ALREADY_EXISTS,
+        B_PRESS_ANY_KEY_TO_CONTINUE
     };
 
     static bool findElement(list<Object*> items, Object* item);
@@ -36,6 +38,8 @@ private:
     static void carMenu();
     static void managerMenu();
     static void carManagerMenu();
+
+    static void configurationMenu();
 
     template <typename TableType>
     static TableType* addEngine(const vector<string>& ignoreFields);

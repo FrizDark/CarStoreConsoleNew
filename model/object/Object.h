@@ -57,13 +57,15 @@ class Object {
 
 private:
 
-    map<string, ElementValue> _values {};
-
     pt::ptree encoder(ElementValue item) const;
 
     ElementValue decoder(pt::ptree element, const string& data, const ElementType* field = nullptr) const;
     ElementValue decodeObject(pt::ptree root) const;
     ElementValue decodeArray(pt::ptree root) const;
+
+protected:
+
+    map<string, ElementValue> m_values {};
 
 public:
 
@@ -73,15 +75,14 @@ public:
     virtual ~Object() = default;
 
     inline virtual const map<string, TypeName> fields() const { return {}; };
-    inline const map<string, ElementValue> values() const { return _values; }
-    inline void insert(pair<string, ElementValue> item) { _values.insert(item); }
-    inline void erase(string key) { _values.erase(key); }
-    inline void clear() { _values.clear(); }
+    inline const map<string, ElementValue> values() const { return m_values; }
+    inline void erase(string key) { m_values.erase(key); }
+    inline void clear() { m_values.clear(); }
 
     ElementValue& operator[](const string& key);
     const ElementValue& operator[](const string& key) const;
     Object& operator=(const Object& obj);
-    inline Object* clone() const { return new Object(*this); };
+    inline virtual Object* clone() const { return new Object(*this); };
 
     bool operator==(const Object&) const;
 
@@ -97,44 +98,44 @@ public:
 class CarModelClass: public Object {
 public:
 
-    CarModelClass() {}
+    CarModelClass() = default;
     CarModelClass(const CarModelClass& obj): Object(obj) {}
 
     const map<string, TypeName> fields() const override;
-    inline CarModelClass * clone() const { return new CarModelClass(*this); }
+    inline CarModelClass * clone() const override { return new CarModelClass(*this); }
 
 };
 
 class CarClass: public Object {
 public:
 
-    CarClass() {}
+    CarClass() = default;
     CarClass(const CarClass& obj): Object(obj) {}
 
     const map<string, TypeName> fields() const override;
-    inline CarClass * clone() const { return new CarClass(*this); }
+    inline CarClass * clone() const override { return new CarClass(*this); }
 
 };
 
 class ManagerClass: public Object {
 public:
 
-    ManagerClass() {}
+    ManagerClass() = default;
     ManagerClass(const ManagerClass& obj): Object(obj) {}
 
     const map<string, TypeName> fields() const override;
-    inline ManagerClass * clone() const { return new ManagerClass(*this); }
+    inline ManagerClass * clone() const override { return new ManagerClass(*this); }
 
 };
 
 class CarManagerClass: public Object {
 public:
 
-    CarManagerClass() {}
+    CarManagerClass() = default;
     CarManagerClass(const CarManagerClass& obj): Object(obj) {}
 
     const map<string, TypeName> fields() const override;
-    inline CarManagerClass * clone() const { return new CarManagerClass(*this); }
+    inline CarManagerClass * clone() const override { return new CarManagerClass(*this); }
 
 };
 

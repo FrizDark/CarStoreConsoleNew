@@ -1,4 +1,5 @@
 #include "UserInterface.h"
+#include "../configuration/DemoData.h"
 
 bool UserInterface::findElement(list<Object*> items, Object* item) {
     return std::any_of(items.begin(), items.end(), [item](const auto& i) {
@@ -63,6 +64,9 @@ void UserInterface::showBanner(UserInterface::Banner type) {
         case B_ALREADY_EXISTS:
             cout << "### #   ALREADY EXISTS   # ###" << endl;
             break;
+        case B_PRESS_ANY_KEY_TO_CONTINUE:
+            cout << "### #   PRESS ANY KEY TO CONTINUE   # ###" << endl;
+            break;
     }
 }
 
@@ -107,14 +111,14 @@ void UserInterface::printMenu(
             in = std::stoi(input);
         } catch (...) {
             showBanner(B_TRY_AGAIN);
-            cout << "### #   PRESS ANY KEY TO CONTINUE   # ###";
+            showBanner(B_PRESS_ANY_KEY_TO_CONTINUE);
             cin.get();
             continue;
         }
         if (in == 0) run = false;
         else if (in > 0 && in <= actions.size()) {
             actions[in - 1].second();
-            cout << "### #   PRESS ANY KEY TO CONTINUE   # ###";
+            showBanner(B_PRESS_ANY_KEY_TO_CONTINUE);
             cin.get();
         } else {
             showBanner(B_TRY_AGAIN);
@@ -491,7 +495,30 @@ void UserInterface::mainMenu() {
         CarManager::instance().load();
         showBanner(B_SUCCESS);
     });
+    actions.emplace_back("Configuration", [](){ configurationMenu(); });
     printMenu(title, actions, "Exit");
+}
+
+void UserInterface::configurationMenu() {
+    string title = "Configuration";
+    vector<pair<string, std::function<void()>>> actions;
+    actions.emplace_back("Switch save on exit", [](){
+        Configuration::instance()["saveOnExit"].value.boolean =
+                !Configuration::instance()["saveOnExit"].value.boolean;
+        Configuration::instance().saveConfig();
+    });
+    actions.emplace_back("Switch load on start", [](){
+        Configuration::instance()["loadOnStart"].value.boolean =
+                !Configuration::instance()["loadOnStart"].value.boolean;
+        Configuration::instance().saveConfig();
+    });
+    actions.emplace_back("Fill files with demo data", [](){
+        demo::create();
+    });
+    map<string, function<string(const ElementValue&)>> specifics;
+    printMenu(title, actions, "Exit", [](){
+        printTable(list{&Configuration::instance()}, {});
+    });
 }
 
 template<typename TableType>
@@ -521,6 +548,10 @@ TableType *UserInterface::searchEngine(const vector<std::string> &ignoreFields) 
 
     showBanner(B_SEARCH);
     auto elements = Table::instance().elements();
+    if (elements.empty()) {
+        showBanner(B_NOT_FOUND);
+        return nullptr;
+    }
     string s;
     ElementValue find;
     list<Object*> result;
@@ -563,6 +594,10 @@ optional<Object> UserInterface::searchEngine(View view) {
 
     showBanner(B_SEARCH);
     auto elements = view.elements();
+    if (elements.empty()) {
+        showBanner(B_NOT_FOUND);
+        return nullopt;
+    }
     auto ignoreFields = view.ignored();
     string s;
     ElementValue find;

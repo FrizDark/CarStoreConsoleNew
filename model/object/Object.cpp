@@ -150,27 +150,27 @@ string ElementValue::toString() const {
 }
 
 Object::Object(const Object & obj) {
-    _values = map<string, ElementValue>(obj._values);
+    m_values = map<string, ElementValue>(obj.m_values);
 }
 
 ElementValue &Object::operator[](const string& key) {
-    auto value = _values.find(key);
-    if (value == _values.end()) {
-        _values[key] = ElementValue();
+    auto value = m_values.find(key);
+    if (value == m_values.end()) {
+        m_values[key] = ElementValue();
     }
-    return _values[key];
+    return m_values[key];
 }
 
 const ElementValue &Object::operator[](const string& key) const {
-    auto value = _values.find(key);
-    if (value == _values.end()) {
+    auto value = m_values.find(key);
+    if (value == m_values.end()) {
         throw out_of_range("Key not found.");
     }
-    return _values.at(key);
+    return m_values.at(key);
 }
 
 Object &Object::operator=(const Object &obj) {
-    _values = map<string, ElementValue>(obj._values);
+    m_values = map<string, ElementValue>(obj.m_values);
     return *this;
 }
 
@@ -329,10 +329,12 @@ bool Object::load(const std::string &path) {
     pt::ptree root;
     try {
         pt::read_xml(path, root);
+        return decode(root.get_child("item"));
     } catch (const boost::property_tree::xml_parser_error& ex) {
         return false;
+    } catch (const boost::property_tree::ptree_bad_path& ex) {
+        return false;
     }
-    return decode(root.get_child("item"));
 }
 
 const map<string, TypeName> CarModelClass::fields() const {

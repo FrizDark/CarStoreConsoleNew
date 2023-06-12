@@ -67,6 +67,9 @@ public:
 };
 
 class CarModel: public Table<CarModelClass> {
+private:
+
+    CarModel(): Table<CarModelClass>("Models") {}
 
 public:
 
@@ -75,11 +78,12 @@ public:
         return table;
     }
 
-    CarModel(): Table<CarModelClass>("Models") {}
-
 };
 
 class Car: public Table<CarClass> {
+private:
+
+    Car(): Table<CarClass>("Cars") {}
 
 public:
 
@@ -88,11 +92,12 @@ public:
         return table;
     }
 
-    Car(): Table<CarClass>("Cars") {}
-
 };
 
 class Manager: public Table<ManagerClass> {
+private:
+
+    Manager(): Table<ManagerClass>("Managers") {}
 
 public:
 
@@ -101,11 +106,12 @@ public:
         return table;
     }
 
-    Manager(): Table<ManagerClass>("Managers") {}
-
 };
 
 class CarManager: public Table<CarManagerClass> {
+private:
+
+    CarManager(): Table<CarManagerClass>("CarManagers") {}
 
 public:
 
@@ -113,8 +119,6 @@ public:
         static CarManager table;
         return table;
     }
-
-    CarManager(): Table<CarManagerClass>("CarManagers") {}
 
 };
 
