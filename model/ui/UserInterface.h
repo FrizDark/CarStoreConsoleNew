@@ -43,6 +43,12 @@ private:
 
     template <typename TableType>
     static TableType* addEngine(const vector<string>& ignoreFields);
+    static Object* searchEngine(
+            const list<Object*>& elements,
+            const map<string, TypeName>& fields,
+            const vector<string>& ignoreFields,
+            const function<void(const list<Object*>&)>& print
+    );
     template <typename Table, typename TableType>
     static TableType* searchEngine(const vector<string>& ignoreFields);
     template <typename View>

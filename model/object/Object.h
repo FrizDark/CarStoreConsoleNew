@@ -57,9 +57,9 @@ class Object {
 
 private:
 
-    pt::ptree encoder(ElementValue item) const;
+    pt::ptree encoder(const ElementValue& item) const;
 
-    ElementValue decoder(pt::ptree element, const string& data, const ElementType* field = nullptr) const;
+    ElementValue decoder(const pt::ptree& element, const string& data, const ElementType* field = nullptr) const;
     ElementValue decodeObject(pt::ptree root) const;
     ElementValue decodeArray(pt::ptree root) const;
 
@@ -76,7 +76,7 @@ public:
 
     inline virtual const map<string, TypeName> fields() const { return {}; };
     inline const map<string, ElementValue> values() const { return m_values; }
-    inline void erase(string key) { m_values.erase(key); }
+    inline void erase(const string& key) { m_values.erase(key); }
     inline void clear() { m_values.clear(); }
 
     ElementValue& operator[](const string& key);

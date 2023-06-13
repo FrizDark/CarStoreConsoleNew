@@ -7,6 +7,13 @@ bool UserInterface::findElement(list<Object*> items, Object* item) {
     });
 }
 
+inline bool isInvalid(const vector<string>& ignoreFields, const pair<string, TypeName>& field) {
+    return contains(ignoreFields, field.first) ||
+        field.second.type == et_empty ||
+        field.second.type == et_array ||
+        field.second.type == et_object;
+}
+
 ElementValue UserInterface::askForValue(const string& title, ElementType type) {
     string s;
     while (true) {
@@ -42,32 +49,34 @@ ElementValue UserInterface::askForValue(const string& title, ElementType type) {
 }
 
 void UserInterface::showBanner(UserInterface::Banner type) {
+    cout << "### #   ";
     switch (type) {
         case B_SUCCESS:
-            cout << "### #   SUCCESS   # ###" << endl;
+            cout << "SUCCESS";
             break;
         case B_NOT_FOUND:
-            cout << "### #   NOT FOUND   # ###" << endl;
+            cout << "NOT FOUND";
             break;
         case B_TRY_AGAIN:
-            cout << "### #   TRY AGAIN   # ###" << endl;
+            cout << "TRY AGAIN";
             break;
         case B_SEARCH:
-            cout << "### #   SEARCH   # ###" << endl;
+            cout << "SEARCH";
             break;
         case B_CREATE:
-            cout << "### #   CREATE   # ###" << endl;
+            cout << "CREATE";
             break;
         case B_USED_IN:
-            cout << "### #   USED IN   # ###" << endl;
+            cout << "USED IN";
             break;
         case B_ALREADY_EXISTS:
-            cout << "### #   ALREADY EXISTS   # ###" << endl;
+            cout << "ALREADY EXISTS";
             break;
         case B_PRESS_ANY_KEY_TO_CONTINUE:
-            cout << "### #   PRESS ANY KEY TO CONTINUE   # ###" << endl;
+            cout << "PRESS ANY KEY TO CONTINUE";
             break;
     }
+    cout << "   # ###" << endl;
 }
 
 void UserInterface::printMenu(
@@ -76,7 +85,6 @@ void UserInterface::printMenu(
         const string& exitName,
         const function<void()>& onAppear
         ) {
-    bool run = true;
     string input;
     size_t maxWidth = title.size();
 
@@ -92,7 +100,7 @@ void UserInterface::printMenu(
         return value;
     };
 
-    while (run) {
+    while (true) {
         system("clear");
         if (onAppear != NULL) onAppear();
         cout << line << endl;
@@ -115,13 +123,15 @@ void UserInterface::printMenu(
             cin.get();
             continue;
         }
-        if (in == 0) run = false;
+        if (in == 0) return;
         else if (in > 0 && in <= actions.size()) {
             actions[in - 1].second();
             showBanner(B_PRESS_ANY_KEY_TO_CONTINUE);
             cin.get();
         } else {
             showBanner(B_TRY_AGAIN);
+            showBanner(B_PRESS_ANY_KEY_TO_CONTINUE);
+            cin.get();
         }
     }
 
@@ -129,6 +139,10 @@ void UserInterface::printMenu(
 
 template <typename T>
 void UserInterface::printTable(const list<T *> &values, const vector<std::string> &ignoreFields) {
+    if (values.empty()) {
+        showBanner(B_NOT_FOUND);
+        return;
+    }
     auto fields = values.front()->fields();
     auto format = [](std::string value, size_t width) {
         if (width > value.size()) value.append(width - value.size(), ' ');
@@ -142,8 +156,9 @@ void UserInterface::printTable(const list<T *> &values, const vector<std::string
             if (!columns.contains(field.first)) {
                 columns[field.first] = field.second.name.size();
             }
-            if (columns[field.first] < (*value)[field.first].toString().size()) {
-                columns[field.first] = (*value)[field.first].toString().size();
+            auto size = (*value)[field.first].toString().size();
+            if (columns[field.first] < size) {
+                columns[field.first] = size;
             }
         }
         line += string(columns[field.first] + 2, '-') + "|";
@@ -489,10 +504,10 @@ void UserInterface::mainMenu() {
         showBanner(B_SUCCESS);
     });
     actions.emplace_back("Load all", [](){
-        CarModel::instance().load();
-        Car::instance().load();
-        Manager::instance().load();
-        CarManager::instance().load();
+        if (!CarModel::instance().load()) return;
+        if (!Car::instance().load()) return;
+        if (!Manager::instance().load()) return;
+        if (!CarManager::instance().load()) return;
         showBanner(B_SUCCESS);
     });
     actions.emplace_back("Configuration", [](){ configurationMenu(); });
@@ -503,17 +518,18 @@ void UserInterface::configurationMenu() {
     string title = "Configuration";
     vector<pair<string, std::function<void()>>> actions;
     actions.emplace_back("Switch save on exit", [](){
-        Configuration::instance()["saveOnExit"].value.boolean =
-                !Configuration::instance()["saveOnExit"].value.boolean;
+        toggle(Configuration::instance()["saveOnExit"].value.boolean);
         Configuration::instance().saveConfig();
+        showBanner(B_SUCCESS);
     });
     actions.emplace_back("Switch load on start", [](){
-        Configuration::instance()["loadOnStart"].value.boolean =
-                !Configuration::instance()["loadOnStart"].value.boolean;
+        toggle(Configuration::instance()["loadOnStart"].value.boolean);
         Configuration::instance().saveConfig();
+        showBanner(B_SUCCESS);
     });
     actions.emplace_back("Fill files with demo data", [](){
         demo::create();
+        showBanner(B_SUCCESS);
     });
     map<string, function<string(const ElementValue&)>> specifics;
     printMenu(title, actions, "Exit", [](){
@@ -528,18 +544,19 @@ TableType *UserInterface::addEngine(const vector<std::string> &ignoreFields) {
     auto m = new TableType();
 
     for (const auto& field: (*m).fields()) {
-        if (contains(ignoreFields, field.first) ||
-            field.second.type == et_empty ||
-            field.second.type == et_array ||
-            field.second.type == et_object) continue;
+        if (isInvalid(ignoreFields, field)) continue;
         (*m)[field.first] = askForValue(field.second.name, field.second.type);
     }
 
     return m;
 }
 
-template<typename Table, typename TableType>
-TableType *UserInterface::searchEngine(const vector<std::string> &ignoreFields) {
+Object *UserInterface::searchEngine(
+        const list<Object *> &elements,
+        const map<std::string, TypeName> &fields,
+        const vector<std::string> &ignoreFields,
+        const function<void(const list<Object*>&)>& print
+) {
     auto filter = [](list<Object*>& elements, const std::function<bool(const Object*)>& f) {
         for (auto i = elements.begin(); i != elements.end(); i++) {
             if (!f(*i)) elements.erase(i--);
@@ -547,88 +564,50 @@ TableType *UserInterface::searchEngine(const vector<std::string> &ignoreFields) 
     };
 
     showBanner(B_SEARCH);
-    auto elements = Table::instance().elements();
-    if (elements.empty()) {
-        showBanner(B_NOT_FOUND);
-        return nullptr;
-    }
     string s;
     ElementValue find;
-    list<Object*> result;
+    list<Object*> result = list(elements);
 
-    for (const auto& i: elements) {
-        result.emplace_back(i);
-    }
-
-    for (const auto& field: TableType().fields()) {
-        if (contains(ignoreFields, field.first) ||
-            field.second.type == et_empty ||
-            field.second.type == et_array ||
-            field.second.type == et_object) continue;
-        if (!result.empty()) printTable(result, ignoreFields);
+    for (const auto& field: fields) {
+        if (isInvalid(ignoreFields, field)) continue;
+        if (result.empty()) {
+            showBanner(B_NOT_FOUND);
+            return nullptr;
+        } else print(result);
         find = askForValue(field.second.name, field.second.type);
         filter(result, [field, find](const Object* i){
             return (*i)[field.first].toString() == find.toString();
         });
-        if (result.empty()) {
-            showBanner(B_NOT_FOUND);
-            return nullptr;
-        } else if (result.size() == 1) {
-            return dynamic_cast<TableType*>(result.front());
-        }
-    }
-    if (result.empty()) {
-        showBanner(B_NOT_FOUND);
-        return nullptr;
-    }
-    return dynamic_cast<TableType*>(result.front());
-}
-
-template<typename View>
-optional<Object> UserInterface::searchEngine(View view) {
-    auto filter = [](list<Object>& elements, const std::function<bool(const Object&)>& f) {
-        for (auto i = elements.begin(); i != elements.end(); i++) {
-            if (!f(*i)) elements.erase(i--);
-        }
-    };
-
-    showBanner(B_SEARCH);
-    auto elements = view.elements();
-    if (elements.empty()) {
-        showBanner(B_NOT_FOUND);
-        return nullopt;
-    }
-    auto ignoreFields = view.ignored();
-    string s;
-    ElementValue find;
-    list<Object> result;
-
-    for (const auto& i: elements) {
-        result.emplace_back(i);
-    }
-
-    for (const auto& field: view.fields()) {
-        if (contains(ignoreFields, field.first) ||
-            field.second.type == et_empty ||
-            field.second.type == et_array ||
-            field.second.type == et_object) continue;
-        if (!result.empty()) view.print(result);
-        find = askForValue(field.second.name, field.second.type);
-        filter(result, [field, find](const Object& i){
-            return i[field.first].toString() == find.toString();
-        });
-        if (result.empty()) {
-            showBanner(B_NOT_FOUND);
-            return nullopt;
-        } else if (result.size() == 1) {
+        if (result.size() == 1) {
             return result.front();
         }
     }
     if (result.empty()) {
         showBanner(B_NOT_FOUND);
-        return nullopt;
+        return nullptr;
     }
     return result.front();
+}
+
+template<typename Table, typename TableType>
+TableType *UserInterface::searchEngine(const vector<std::string> &ignoreFields) {
+    auto print = [ignoreFields](const list<Object*>& items) {
+        printTable(items, ignoreFields);
+    };
+    return dynamic_cast<TableType*>(searchEngine(Table::instance().elements(), TableType().fields(), ignoreFields, print));
+}
+
+template<typename View>
+optional<Object> UserInterface::searchEngine(View view) {
+    auto elements = view.elements();
+    list<Object*> el;
+    for (auto& i: elements) el.push_back(&i);
+    auto print = [view](const list<Object*>& items) {
+        view.print(convert<Object*, Object>(items, [](Object* item){ return *item; }));
+    };
+    auto item = searchEngine(el, view.fields(), view.ignored(), print);
+    if (item == nullptr) return nullopt;
+    else return *item;
 }
 
 template<typename TableType>
@@ -643,10 +622,7 @@ void UserInterface::editEngine(
         if (specifics.contains(field.first)) {
             actions.emplace_back(field.second.name, specifics.at(field.first));
         } else {
-            if (contains(ignoreFields, field.first) ||
-                field.second.type == et_empty ||
-                field.second.type == et_array ||
-                field.second.type == et_object) continue;
+            if (isInvalid(ignoreFields, field)) continue;
             actions.emplace_back(field.second.name, [=, &item](){
                 (*item)[field.first] = askForValue(field.second.name, field.second.type);
             });

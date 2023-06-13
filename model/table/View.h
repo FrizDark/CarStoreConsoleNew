@@ -14,7 +14,7 @@ public:
         list<pair<string, JoinField>> children;
 
         JoinField() = default;
-        JoinField(const BasicTable* parent, const string& idField, list<pair<string, JoinField>> children = {});
+        JoinField(const BasicTable* parent, const string& idField, const list<pair<string, JoinField>>& children = {});
 
         JoinField(const JoinField& obj);
         JoinField& operator=(const JoinField& obj);
@@ -57,7 +57,7 @@ public:
 
     void print(const list<Object>& values) const;
     void print() const;
-    void print(function<bool(const Object&)> f) const;
+    void print(const function<bool(const Object&)>& f) const;
 
 };
 

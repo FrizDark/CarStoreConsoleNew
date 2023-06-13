@@ -31,7 +31,7 @@ inline string join(const map<K, T>& m, F f, const string& s = " ") {
 }
 template <typename K, typename T, typename F>
 inline void join(const map<K, T>& v, string& ss, F f, const string& s = " ") {
-    ss =  join(v, f, s);
+    ss = join(v, f, s);
 }
 
 template <typename T, typename F>
@@ -51,19 +51,19 @@ inline void separate(const string& str, vector<T>& v, const string& s = " ") {
     }
 }
 
-template <typename T, typename T2>
-inline vector<T2> convert(const vector<T>& v, function<T2(T)> f) {
+template <typename T, typename T2, typename F>
+inline vector<T2> convert(const vector<T>& v, F f) {
     vector<T2> vv;
-    for (const auto& i: v) {
+    for (auto& i: v) {
         vv.emplace_back(f(i));
     }
     return vv;
 }
 
-template <typename T, typename T2>
-inline list<T2> convert(const list<T>& v, function<T2(T)> f) {
+template <typename T, typename T2, typename F>
+inline list<T2> convert(const list<T>& v, F f) {
     list<T2> vv;
-    for (const auto& i: v) {
+    for (auto& i: v) {
         vv.emplace_back(f(i));
     }
     return vv;
@@ -76,6 +76,10 @@ inline map<T, T2> filter(const map<T, T2> m, F f) {
         if (f(i)) mm[i.first] = i.second;
     }
     return mm;
+}
+
+inline void toggle(bool& b) {
+    b = !b;
 }
 
 #endif //CARSTORE_EXTENSIONS_H

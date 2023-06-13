@@ -8,7 +8,7 @@ class Table: public BasicTable {
 
 public:
 
-    Table(const string name): BasicTable(name) {}
+    Table(const string& name): BasicTable(name) {}
 
     bool load() {
         pt::ptree root;
@@ -21,13 +21,11 @@ public:
 
         clear();
 
-        T* item = new T();
-
         try {
             for(const auto& element: root.get_child(name())) {
-                item->decode(element.second);
-                m_elements.emplace_back(item->clone());
-                item->clear();
+                T item;
+                item.decode(element.second);
+                m_elements.emplace_back(item.clone());
             }
         } catch(const pt::ptree_bad_path& ex) {
             return false;
@@ -39,7 +37,7 @@ public:
     inline void add(T* m) { BasicTable::add(m); }
     inline void remove(T* m) { BasicTable::remove(m); }
 
-    list<const T*> filter(function<bool(const T*)> f) const {
+    list<const T*> filter(const function<bool(const T*)>& f) const {
         list<const T*> out;
         for (auto i: m_elements) {
             if (f(static_cast<T*>(i))) out.emplace_back(static_cast<T*>(i));
@@ -47,7 +45,7 @@ public:
         return out;
     }
 
-    list<T*> filter(function<bool(const T*)> f) {
+    list<T*> filter(const function<bool(const T*)>& f) {
         list<T*> out;
         for (auto i: m_elements) {
             if (f(static_cast<T*>(i))) out.emplace_back(static_cast<T*>(i));
@@ -55,11 +53,11 @@ public:
         return out;
     }
 
-    const T* first(function<bool(const T*)> f) const {
+    const T* first(const function<bool(const T*)>& f) const {
         auto result = filter(f);
         return result.empty() ? nullptr : result.front();
     }
-    T* first(function<bool(const T*)> f) {
+    T* first(const function<bool(const T*)>& f) {
         auto result = filter(f);
         return result.empty() ? nullptr : result.front();
     }

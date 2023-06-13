@@ -1,6 +1,8 @@
 #include "BasicTable.h"
+#include <filesystem>
+namespace fs = std::filesystem;
 
-string BasicTable::dataFilePath = "../data/";
+string BasicTable::dataFilePath = "./data/";
 
 void BasicTable::save() const {
     pt::ptree root, array;
@@ -9,10 +11,16 @@ void BasicTable::save() const {
     }
     root.put_child(name(), array);
     string fileName = dataFilePath + name() + "Data.xml";
-    pt::write_xml(fileName, root);
+    if (!fs::is_directory(dataFilePath)) {
+        if (fs::create_directory(dataFilePath)) {
+            pt::write_xml(fileName, root);
+        }
+    } else {
+        pt::write_xml(fileName, root);
+    }
 }
 
-vector<const Object*> BasicTable::filter(function<bool(const Object*)> f) const {
+vector<const Object*> BasicTable::filter(const function<bool(const Object*)> &f) const {
     vector<const Object*> out;
     for (auto i: m_elements) {
         if (f(i)) out.emplace_back(i);
@@ -20,7 +28,7 @@ vector<const Object*> BasicTable::filter(function<bool(const Object*)> f) const 
     return out;
 }
 
-vector<Object*> BasicTable::filter(function<bool(const Object*)> f) {
+vector<Object*> BasicTable::filter(const function<bool(const Object*)> &f) {
     vector<Object*> out;
     for (auto i: m_elements) {
         if (f(i)) out.emplace_back(i);
@@ -28,12 +36,12 @@ vector<Object*> BasicTable::filter(function<bool(const Object*)> f) {
     return out;
 }
 
-const Object *BasicTable::first(function<bool(const Object *)> f) const {
+const Object *BasicTable::first(const function<bool(const Object*)> &f) const {
     auto result = filter(f);
     return result.empty() ? nullptr : result.front();
 }
 
-Object *BasicTable::first(function<bool(const Object *)> f) {
+Object *BasicTable::first(const function<bool(const Object*)> &f) {
     auto result = filter(f);
     return result.empty() ? nullptr : result.front();
 }

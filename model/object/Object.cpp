@@ -126,8 +126,8 @@ ElementValue::~ElementValue() {
 }
 
 string ElementValue::toString() const {
-    auto convertArray = [](const ElementValue& value) {
-        return value.toString();
+    auto convertArray = [](const ElementValue& item) {
+        return item.toString();
     };
     string num;
     switch (type) {
@@ -224,7 +224,7 @@ pt::ptree Object::encode() const {
     return root;
 }
 
-pt::ptree Object::encoder(ElementValue item) const {
+pt::ptree Object::encoder(const ElementValue &item) const {
     pt::ptree root, array;
     switch(item.type) {
         case et_empty:
@@ -253,7 +253,7 @@ pt::ptree Object::encoder(ElementValue item) const {
     return root;
 }
 
-ElementValue Object::decoder(pt::ptree element, const std::string &data, const ElementType *field) const {
+ElementValue Object::decoder(const pt::ptree &element, const std::string &data, const ElementType *field) const {
     ElementType fieldType;
     try {
         ElementType type = getType(element.get<int>("<xmlattr>.type"));

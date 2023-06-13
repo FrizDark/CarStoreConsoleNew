@@ -1,29 +1,16 @@
 #include "View.h"
 
-pair<string, string> getToken(string key) {
-    vector<string> chunks;
-    auto c = [](const string& s) { return s; };
-    separate(key, chunks, ".");
-    if (key.size() >= 2) {
-        return make_pair(chunks[0], chunks[1]);
-    }
-    return make_pair("", "");
-}
-
 View::JoinField::JoinField(
         const BasicTable *parent,
         const string &idField,
-        list<pair<string, View::JoinField>> children) {
+        const list<pair<string, View::JoinField>>& children) {
     this->parent = parent;
     this->idField = idField;
     this->children = list(children);
 }
 
-View::JoinField::JoinField(const View::JoinField &obj) {
-    this->parent = obj.parent;
-    this->idField = obj.idField;
-    this->children = list(obj.children);
-}
+View::JoinField::JoinField(const View::JoinField &obj):
+    JoinField(obj.parent, obj.idField, obj.children) {}
 
 View::JoinField &View::JoinField::operator=(const View::JoinField &obj) {
     this->parent = obj.parent;
@@ -109,6 +96,10 @@ vector<string> ViewPrintable::ignored() const {
 }
 
 void ViewPrintable::print(const list<Object> &values) const {
+    if (values.empty()) {
+        cout << "### #   NOT FOUND   # ###" << endl;
+        return;
+    }
     auto format = [](string value, size_t width) {
         if (width > value.size()) value.append(width - value.size(), ' ');
         return value;
@@ -121,8 +112,9 @@ void ViewPrintable::print(const list<Object> &values) const {
             if (!columns.contains(field.first)) {
                 columns[field.first] = field.second.name.size();
             }
-            if (columns[field.first] < value[field.first].toString().size()) {
-                columns[field.first] = value[field.first].toString().size();
+            auto size = value[field.first].toString().size();
+            if (columns[field.first] < size) {
+                columns[field.first] = size;
             }
         }
         line += string(columns[field.first] + 2, '-') + "|";
@@ -146,7 +138,7 @@ void ViewPrintable::print(const list<Object> &values) const {
     cout << line << endl;
 }
 
-void ViewPrintable::print(function<bool(const Object &)> f) const {
+void ViewPrintable::print(const function<bool(const Object &)>& f) const {
     print(filter(f));
 }
 

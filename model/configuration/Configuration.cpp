@@ -25,5 +25,6 @@ void Configuration::loadConfig() {
     if (!load(BasicTable::dataFilePath + fileName)) {
         (*this)["saveOnExit"] = false;
         (*this)["loadOnStart"] = true;
+        saveConfig();
     }
 }

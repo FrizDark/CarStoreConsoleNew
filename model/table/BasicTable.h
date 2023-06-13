@@ -20,8 +20,8 @@ public:
 
     static string dataFilePath;
 
-    inline string name() const { return m_name; }
-    inline list<Object*> elements() const { return m_elements; }
+    inline const string& name() const { return m_name; }
+    inline const list<Object*>& elements() const { return m_elements; }
 
     inline void clear() { m_elements.clear(); }
 
@@ -30,11 +30,11 @@ public:
     inline virtual void add(Object* m) { m_elements.emplace_back(m); }
     inline virtual void remove(Object* m) { m_elements.remove(m); }
 
-    virtual vector<const Object*> filter(function<bool(const Object*)> f) const;
-    virtual vector<Object*> filter(function<bool(const Object*)> f);
+    virtual vector<const Object*> filter(const function<bool(const Object*)>& f) const;
+    virtual vector<Object*> filter(const function<bool(const Object*)>& f);
 
-    virtual const Object* first(function<bool(const Object*)> f) const;
-    virtual Object* first(function<bool(const Object*)> f);
+    virtual const Object* first(const function<bool(const Object*)>& f) const;
+    virtual Object* first(const function<bool(const Object*)>& f);
 
 };
 
