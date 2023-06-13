@@ -90,7 +90,7 @@ public:
 
     pt::ptree encode() const;
     bool decode(const pt::ptree& root);
-    void save(const string& path) const;
+    void save(const std::string &path, const std::string &fileName) const;
     bool load(const string& path);
 
 };

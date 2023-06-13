@@ -18,7 +18,7 @@ ElementValue &Configuration::operator[](const std::string &key) {
 }
 
 void Configuration::saveConfig() const {
-    save(BasicTable::dataFilePath + fileName);
+    save(BasicTable::dataFilePath, fileName);
 }
 
 void Configuration::loadConfig() {

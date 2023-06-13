@@ -1,4 +1,6 @@
 #include "Object.h"
+#include <filesystem>
+namespace fs = std::filesystem;
 
 ElementType getType(int id) {
     switch (id) {
@@ -319,10 +321,16 @@ bool Object::decode(const pt::ptree &root) {
     }
 }
 
-void Object::save(const std::string &path) const {
+void Object::save(const std::string &path, const std::string &fileName) const {
     pt::ptree root;
     root.put_child("item", encode());
-    pt::write_xml(path, root);
+    if (!fs::is_directory(path)) {
+        if (fs::create_directory(path)) {
+            pt::write_xml(path + fileName, root);
+        }
+    } else {
+        pt::write_xml(path, root);
+    }
 }
 
 bool Object::load(const std::string &path) {
