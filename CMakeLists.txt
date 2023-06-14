@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(CarStore VERSION 1.01)
+project(CarStore VERSION 1.02)
 
 set(CMAKE_CXX_STANDARD 23)
 

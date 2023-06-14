@@ -78,7 +78,7 @@ public:
     inline const map<string, ElementValue> values() const { return m_values; }
     inline void erase(const string& key) { m_values.erase(key); }
     inline void clear() { m_values.clear(); }
-    inline virtual bool check(const string& key, ElementValue value) { return true; }
+    inline virtual bool check(const string& key, ElementValue value) const { return true; }
 
     ElementValue& operator[](const string& key);
     const ElementValue& operator[](const string& key) const;
@@ -124,7 +124,7 @@ public:
     ManagerClass() = default;
     ManagerClass(const ManagerClass& obj): Object(obj) {}
 
-    bool check(const std::string &key, ElementValue value) override;
+    bool check(const std::string &key, ElementValue value) const override;
     const map<string, TypeName> fields() const override;
     inline ManagerClass * clone() const override { return new ManagerClass(*this); }
 

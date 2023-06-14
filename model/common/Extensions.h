@@ -69,15 +69,6 @@ inline list<T2> convert(const list<T>& v, F f) {
     return vv;
 }
 
-template <typename T, typename T2, typename F>
-inline map<T, T2> filter(const map<T, T2> m, F f) {
-    map<T, T2> mm;
-    for (const auto& i: m) {
-        if (f(i)) mm[i.first] = i.second;
-    }
-    return mm;
-}
-
 inline void toggle(bool& b) {
     b = !b;
 }

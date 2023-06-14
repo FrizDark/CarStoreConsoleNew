@@ -36,6 +36,7 @@ ElementValue UserInterface::askForValue(
                 cin >> s; cin.get();
                 try {
                     auto num = stod(s);
+                    if (check == NULL) return num;
                     if (check(num)) return num;
                 } catch (...) {}
                 showBanner(B_TRY_AGAIN);
@@ -43,8 +44,9 @@ ElementValue UserInterface::askForValue(
             case et_string:
                 cout << ": ";
                 getline(cin, s);
-                if (!s.empty() && check(s)) {
-                    return s;
+                if (!s.empty()) {
+                    if (check == NULL) return s;
+                    if (check(s)) return s;
                 }
                 showBanner(B_TRY_AGAIN);
                 break;
@@ -342,7 +344,7 @@ void UserInterface::carMenu() {
 
 void UserInterface::managerMenu() {
     vector<string> ignoreFields = {"id"};
-    string title = "Car model";
+    string title = "Manager model";
     vector<pair<string, std::function<void()>>> actions;
     actions.emplace_back("Add", [ignoreFields](){
         auto manager = addEngine<ManagerClass>(ignoreFields);

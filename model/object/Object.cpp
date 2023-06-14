@@ -363,7 +363,7 @@ const map<string, TypeName> CarClass::fields() const {
     return f;
 }
 
-bool ManagerClass::check(const std::string &key, ElementValue value) {
+bool ManagerClass::check(const std::string &key, ElementValue value) const {
     if (key == "age") {
         if (value.type == et_number) {
             return value.value.number > 18;

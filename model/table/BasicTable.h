@@ -9,7 +9,6 @@ class BasicTable {
 protected:
 
     string m_name {};
-    string m_path {};
     list<Object*> m_elements {};
 
     BasicTable(const string& name): m_name(name) {}
