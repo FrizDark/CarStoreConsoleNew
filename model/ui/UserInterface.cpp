@@ -14,7 +14,11 @@ inline bool isInvalid(const vector<string>& ignoreFields, const pair<string, Typ
         field.second.type == et_object;
 }
 
-ElementValue UserInterface::askForValue(const string& title, ElementType type) {
+ElementValue UserInterface::askForValue(
+        const string& title,
+        ElementType type,
+        const function<bool(ElementValue)>& check
+        ) {
     string s;
     while (true) {
         cout << title;
@@ -31,14 +35,15 @@ ElementValue UserInterface::askForValue(const string& title, ElementType type) {
                 cout << " (number): ";
                 cin >> s; cin.get();
                 try {
-                    return stod(s);
+                    auto num = stod(s);
+                    if (check(num)) return num;
                 } catch (...) {}
                 showBanner(B_TRY_AGAIN);
                 break;
             case et_string:
                 cout << ": ";
                 getline(cin, s);
-                if (!s.empty()) {
+                if (!s.empty() && check(s)) {
                     return s;
                 }
                 showBanner(B_TRY_AGAIN);
@@ -545,7 +550,11 @@ TableType *UserInterface::addEngine(const vector<std::string> &ignoreFields) {
 
     for (const auto& field: (*m).fields()) {
         if (isInvalid(ignoreFields, field)) continue;
-        (*m)[field.first] = askForValue(field.second.name, field.second.type);
+        (*m)[field.first] = askForValue(field.second.name,
+                                        field.second.type,
+                                        [field, m](ElementValue val){
+                                            return m->check(field.first, val);
+                                        });
     }
 
     return m;
@@ -624,7 +633,11 @@ void UserInterface::editEngine(
         } else {
             if (isInvalid(ignoreFields, field)) continue;
             actions.emplace_back(field.second.name, [=, &item](){
-                (*item)[field.first] = askForValue(field.second.name, field.second.type);
+                (*item)[field.first] = askForValue(field.second.name,
+                                                   field.second.type,
+                                                   [field, item](ElementValue val){
+                                                       return item->check(field.first, val);
+                                                   });
             });
         }
     }

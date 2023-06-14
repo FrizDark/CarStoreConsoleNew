@@ -363,6 +363,26 @@ const map<string, TypeName> CarClass::fields() const {
     return f;
 }
 
+bool ManagerClass::check(const std::string &key, ElementValue value) {
+    if (key == "age") {
+        if (value.type == et_number) {
+            return value.value.number > 18;
+        }
+        return false;
+    } else if (key == "phone") {
+        if (value.type == et_string) {
+            return value.value.string->front() == '+' &&
+                value.value.string->size() >= 9 &&
+                value.value.string->size() <= 11 &&
+                all_of(value.value.string->begin(), value.value.string->end(), [](char c) {
+                    return c == '+' || isdigit(c);
+                });
+        }
+        return false;
+    }
+    return true;
+}
+
 const map<string, TypeName> ManagerClass::fields() const {
     map<string, TypeName> f;
     f.insert(make_pair("id", TypeName {et_string, "ID"}));

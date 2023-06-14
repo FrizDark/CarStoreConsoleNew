@@ -21,7 +21,11 @@ private:
     };
 
     static bool findElement(list<Object*> items, Object* item);
-    static ElementValue askForValue(const string& title, ElementType type);
+    static ElementValue askForValue(
+            const string& title,
+            ElementType type,
+            const function<bool(ElementValue)>& check = NULL
+    );
 
     static void showBanner(Banner type);
     static void printMenu(
