@@ -50,9 +50,9 @@ struct TableFixture {
         m["number"] = 12.34;
         m["string"] = "Test text";
         m["array"] = vector<ElementValue>{10, false, "123"};
-        string path = "./TestModel.xml";
-        m.save(path);
-        testModel.load(path);
+        string path = "./", fileName = "TestModel.xml";
+        m.save(path, fileName);
+        testModel.load(path + fileName);
         BOOST_CHECK_EQUAL(testModel["boolean"].value.boolean, true);
         BOOST_CHECK_EQUAL(testModel["number"].value.number, 12.34);
         BOOST_CHECK_EQUAL(*testModel["string"].value.string, "Test text");

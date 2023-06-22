@@ -329,7 +329,7 @@ void Object::save(const std::string &path, const std::string &fileName) const {
             pt::write_xml(path + fileName, root);
         }
     } else {
-        pt::write_xml(path, root);
+        pt::write_xml(path + fileName, root);
     }
 }
 
